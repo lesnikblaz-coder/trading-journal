@@ -14,5 +14,5 @@ class BaseRepo(Generic[ModelT]):
 
     async def create(self, entity: ModelT) -> ModelT:
         self.session.add(entity)
-        await self.session.flush(entity)
+        await self.session.flush()
         return entity
