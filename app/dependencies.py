@@ -3,7 +3,7 @@ from typing import Annotated
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database import AsyncSessionLocal
+from app.database.base import AsyncSessionLocal
 from app.repositories.user import UserRepo
 from app.services.auth import AuthService
 

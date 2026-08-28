@@ -1,7 +1,7 @@
 from sqlalchemy import select
 
 from app.repositories.base import BaseRepo
-from app.models.user import User
+from app.database.models.user import User
 
 
 class UserRepo(BaseRepo[User]):

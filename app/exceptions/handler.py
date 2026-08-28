@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from app.exceptions.base import AppException
-from app.logging_config import logger
+from app.core.logging_config import logger
 
 def register_exception_handlers(app: FastAPI):
     @app.exception_handler(AppException)

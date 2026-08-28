@@ -5,7 +5,7 @@ from fastapi.security import OAuth2PasswordBearer
 from uuid import UUID
 from datetime import datetime, timezone, timedelta
 
-from app.config import settings
+from app.core.config import settings
 from app.exceptions.custom import InvalidTokenError
 
 
@@ -21,7 +21,7 @@ def verify_pw(plain_pw: str, hashed_pw: str) -> bool:
     return pw_hash.verify(plain_pw, hashed_pw)
 
 
-def get_token(user_id: UUID) -> str:
+def create_access_token(user_id: UUID) -> str:
     expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
     payload = {
@@ -36,7 +36,7 @@ def get_token(user_id: UUID) -> str:
     )
 
 
-def decode_token(token: str) -> UUID:
+def decode_access_token(token: str) -> UUID:
     try:
         payload = jwt.decode(
             jwt=token,

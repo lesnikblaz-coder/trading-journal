@@ -12,8 +12,8 @@ register_exception_handlers(app)
 
 # ---------- ROOT ----------
 @app.get("/", include_in_schema=False)
-async def root() -> dict[str, int]:
-    return {"status": 1}
+async def root() -> dict[str, str]:
+    return {"status": "TRUE"}
 
 
 # ---------- AUTH ----------

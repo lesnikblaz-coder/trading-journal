@@ -3,7 +3,7 @@ from sqlalchemy import String, BOOLEAN, Enum
 from sqlalchemy import UUID as sUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.database import Base
+from app.database.base import Base
 from app.enums import UserRole
 
 
