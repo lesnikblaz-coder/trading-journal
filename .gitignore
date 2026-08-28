@@ -1,0 +1,14 @@
+# Virtual environments
+venv/
+price_alert_system/.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Environment variables
+price_alert_system/.env
+.env
+
+# Local notes
+ideas.txt
