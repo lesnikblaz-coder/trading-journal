@@ -11,7 +11,8 @@ from app.services.auth import AuthService
 # ---------- SESSION ----------
 async def _get_session():
     async with AsyncSessionLocal() as session:
-        yield session
+        async with session.begin():
+            yield session
 
 SessionDep = Annotated[AsyncSession, Depends(_get_session)]
 
