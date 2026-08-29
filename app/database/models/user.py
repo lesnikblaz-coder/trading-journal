@@ -80,3 +80,6 @@ class Trade(Base):
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_onupdate=func.now(), nullable=True)
+
+    user: Mapped["User"] = relationship(back_populates="trades")
+    trading_system: Mapped["TradingSystem"] = relationship(back_populates="trades")
