@@ -6,6 +6,7 @@ from sqlalchemy import UUID as sUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app import enums
+from app.database import models
 from app.database.base import Base
 
 

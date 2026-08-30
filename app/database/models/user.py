@@ -3,8 +3,9 @@ from sqlalchemy import String, BOOLEAN, Enum
 from sqlalchemy import UUID as sUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.database.base import Base
 from app import enums
+from app.database import models
+from app.database.base import Base
 
 
 class User(Base):
