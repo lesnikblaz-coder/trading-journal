@@ -5,11 +5,9 @@ from sqlalchemy import pool
 
 from alembic import context
 
+from app.database import models
 from app.database.base import Base
 from app.core.config import settings
-from app.database.models.user import User
-from app.database.models.trade import Trade
-from app.database.models.trading_system import TradingSystem
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
