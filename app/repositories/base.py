@@ -1,6 +1,7 @@
 from typing import Generic, TypeVar, Sequence, Any
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from uuid import UUID
 
 
 
@@ -23,7 +24,7 @@ class BaseRepo(Generic[ModelT]):
 
         return result.scalars().all()
 
-    async def get_by_id(self, entity_id: int) -> ModelT | None:
+    async def get_by_id(self, entity_id: UUID) -> ModelT | None:
         result = await self.session.execute(
             select(self.model)
             .where(self.model.id == entity_id)
@@ -31,7 +32,7 @@ class BaseRepo(Generic[ModelT]):
 
         return result.scalar_one_or_none()
 
-    async def update(self, entity_id: int, **fields: Any) -> ModelT | None:
+    async def update(self, entity_id: UUID, **fields: Any) -> ModelT | None:
         entity = await self.get_by_id(entity_id)
 
         if entity is None:
@@ -44,7 +45,7 @@ class BaseRepo(Generic[ModelT]):
 
         return entity
 
-    async def delete(self, entity_id: int) -> ModelT | None:
+    async def delete(self, entity_id: UUID) -> ModelT | None:
         entity = await self.get_by_id(entity_id)
 
         if entity is None:
