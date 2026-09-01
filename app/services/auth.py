@@ -3,6 +3,8 @@ from app.repositories.user import UserRepo
 from app.exceptions.custom import DuplicateEmailError, InvalidCredentialsError
 from app.schemas.auth import TokenResponse
 from app.database.models.user import User
+from app.core.security import decode_access_token
+from app.exceptions.custom import UserNotFoundError
 
 
 class AuthService:
@@ -33,3 +35,12 @@ class AuthService:
         return TokenResponse(
             access_token=security.create_access_token(user.id)
         )
+
+    async def decode_user(self, token: str) -> User | None:
+        user_id = decode_access_token(token)
+        user = await self.repo.get_by_id(user_id)
+
+        if not user:
+            raise UserNotFoundError()
+
+        return user
