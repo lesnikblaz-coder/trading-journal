@@ -24,11 +24,13 @@ class BaseRepo(Generic[ModelT]):
 
         return result.scalars().all()
 
-    async def get_by_id(self, entity_id: UUID) -> ModelT | None:
-        result = await self.session.execute(
-            select(self.model)
-            .where(self.model.id == entity_id)
-        )
+    async def get_by_id(self, entity_id: UUID, user_id: UUID | None = None) -> ModelT | None:
+        query = select(self.model).where(self.model.id == entity_id)
+
+        if user_id is not None:
+            query = query.where(self.model.user_id == user_id)
+
+        result = await self.session.execute(query)
 
         return result.scalar_one_or_none()
 
