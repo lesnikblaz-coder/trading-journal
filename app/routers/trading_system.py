@@ -19,3 +19,7 @@ async def get_trading_systems(service: dep.TradingSystemServiceDep, user: dep.Cu
 @router.get("/trading-systems/{trading_system_id}", response_model=sc.TradingSystemResponse)
 async def get_trading_system_by_id(trading_system_id: UUID, service: dep.TradingSystemServiceDep, user: dep.CurrentUserDep) -> sc.TradingSystemResponse | None:
     return await service.get_by_id(trading_system_id=trading_system_id, user_id=user.id)
+
+@router.delete("/trading-systems/{trading_system_id}", status_code=204)
+async def delete_trading_system_by_id(trading_system_id: UUID, service: dep.TradingSystemServiceDep, user: dep.CurrentUserDep) -> None:
+    return await service.delete_by_id(trading_system_id=trading_system_id, user_id=user.id)
