@@ -47,8 +47,8 @@ class BaseRepo(Generic[ModelT]):
 
         return entity
 
-    async def delete(self, entity_id: UUID) -> ModelT | None:
-        entity = await self.get_by_id(entity_id)
+    async def delete(self, entity_id: UUID, user_id: UUID | None = None) -> ModelT | None:
+        entity = await self.get_by_id(entity_id, user_id)
 
         if entity is None:
             return None
