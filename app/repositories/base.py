@@ -3,6 +3,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 
+from app.exceptions.custom import EntityNotFoundError
+
 
 
 ModelT = TypeVar("ModelT")
@@ -34,11 +36,11 @@ class BaseRepo(Generic[ModelT]):
 
         return result.scalar_one_or_none()
 
-    async def update(self, entity_id: UUID, user_id: UUID | None = None, **fields: Any) -> ModelT | None:
+    async def update(self, entity_id: UUID, user_id: UUID | None = None, **fields: Any) -> ModelT:
         entity = await self.get_by_id(entity_id, user_id)
 
         if entity is None:
-            return None
+            raise EntityNotFoundError()
 
         for field, value in fields.items():
             setattr(entity, field, value)
@@ -47,11 +49,11 @@ class BaseRepo(Generic[ModelT]):
 
         return entity
 
-    async def delete(self, entity_id: UUID, user_id: UUID | None = None) -> ModelT | None:
+    async def delete(self, entity_id: UUID, user_id: UUID | None = None) -> ModelT:
         entity = await self.get_by_id(entity_id, user_id)
 
         if entity is None:
-            return None
+            raise EntityNotFoundError()
 
         entity = await self.session.delete(entity)
 
