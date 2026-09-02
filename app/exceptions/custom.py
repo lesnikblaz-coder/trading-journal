@@ -21,3 +21,7 @@ class DuplicateEmailError(AppException):
 class InsufficientPermissions(AppException):
     status_code = 403
     detail = "Insufficient permissions."
+
+class EntityNotFoundError(AppException):
+    status_code = 404
+    detail = "Entity not found."
