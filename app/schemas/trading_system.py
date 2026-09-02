@@ -33,3 +33,15 @@ class TradingSystemRequest(BaseModel):
     take_profit_rules: str
     break_even_rules: str
     additional_rules: str
+
+class TradingSystemUpdate(BaseModel):
+    name: str | None = None
+    description: str | None = None
+    asset_class: enums.AssetClass | None = None
+    timeframe: enums.TradeTimeframe | None = None
+    setup_requirements: str | None = None
+    entry_rules: str | None = None
+    stop_loss_rules: str | None = None
+    take_profit_rules: str | None = None
+    break_even_rules: str | None = None
+    additional_rules: str | None = None
