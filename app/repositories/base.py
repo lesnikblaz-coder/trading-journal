@@ -34,8 +34,8 @@ class BaseRepo(Generic[ModelT]):
 
         return result.scalar_one_or_none()
 
-    async def update(self, entity_id: UUID, **fields: Any) -> ModelT | None:
-        entity = await self.get_by_id(entity_id)
+    async def update(self, entity_id: UUID, user_id: UUID | None = None, **fields: Any) -> ModelT | None:
+        entity = await self.get_by_id(entity_id, user_id)
 
         if entity is None:
             return None
