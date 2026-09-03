@@ -13,7 +13,7 @@ class TradeService:
         self.trade_repo = trade_repo
         self.trading_system_repo = trading_system_repo
 
-    async def create(self, system_id: UUID, request: sc.TradeCreateRequest, user_id: UUID) -> Trade:
+    async def create(self, system_id: UUID, request: sc.TradeCreateRequest, user_id: UUID) -> sc.TradeResponse:
 
         # checks whether trading system exists and belongs to the current user
         if not await self.trading_system_repo.get_by_id(system_id, user_id):
@@ -44,3 +44,18 @@ class TradeService:
         )
 
         return await self.trade_repo.create(trade)
+
+    async def get_all_for_system(self, system_id: UUID, user_id: UUID) -> list[sc.TradeResponse]:
+        result = await self.trade_repo.get_all_for_system(system_id, user_id)
+
+        return [sc.TradeResponse.model_validate(r) for r in result]
+
+    async def get_by_id(self, trade_id: UUID, user_id: UUID) -> sc.TradeResponse | None:
+        return await self.trade_repo.get_by_id(trade_id, user_id)
+
+    async def update(self, trade_id: UUID, user_id: UUID, request: sc.TradeUpdateRequest) -> sc.TradeResponse:
+        return await self.trade_repo.update(
+            entity_id=trade_id,
+            user_id=user_id,
+            **request.model_dump(exclude_none=True)
+        )
