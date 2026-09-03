@@ -13,6 +13,7 @@ class TradeCreateRequest(BaseModel):
     exit_price: Decimal | None = None
     stop_loss_price: Decimal
     quantity: int
+    dollar_risk: Decimal
     opened_at: str | None = None
     closed_at: str | None = None
     status: enums.TradeStatus
@@ -33,6 +34,7 @@ class TradeResponse(BaseModel):
     opened_at: str
     closed_at: str
     status: enums.TradeStatus
+    dollar_risk: Decimal
     realized_pnl: Decimal | None
     realized_pnl_percent: Decimal | None
     result_r: Decimal | None
@@ -47,6 +49,7 @@ class TradeUpdateRequest(BaseModel):
     exit_price: Decimal | None = None
     stop_loss_price: Decimal | None = None
     quantity: int | None = None
+    dollar_risk: Decimal | None = None
     opened_at: str | None = None
     closed_at: str | None = None
     status: enums.TradeStatus | None = None
