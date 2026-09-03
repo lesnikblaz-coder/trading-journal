@@ -7,6 +7,8 @@ from app.database.models.trading_system import TradingSystem
 
 
 class TradingSystemRepo(BaseRepo):
+    model = TradingSystem
+
     async def get_by_user(self, user_id: UUID) -> Sequence[TradingSystem]:
         result = await self.session.execute(
             select(TradingSystem)
