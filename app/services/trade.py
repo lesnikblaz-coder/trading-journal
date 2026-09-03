@@ -13,7 +13,7 @@ class TradeService:
         self.trade_repo = trade_repo
         self.trading_system_repo = trading_system_repo
 
-    async def create(self, system_id: UUID, request: sc.TradeCreateRequest, user_id: UUID):
+    async def create(self, system_id: UUID, request: sc.TradeCreateRequest, user_id: UUID) -> Trade:
 
         # checks whether trading system exists and belongs to the current user
         if not await self.trading_system_repo.get_by_id(system_id, user_id):
@@ -25,7 +25,7 @@ class TradeService:
                 or
                 (request.direction is TradeDirection.BEARISH and request.entry_price >= request.stop_loss_price)
         ):
-            return InvalidTradeDataValuesError
+            raise InvalidTradeDataValuesError()
 
 
         if request.exit_price is not None:
@@ -34,7 +34,7 @@ class TradeService:
                     or
                     (request.direction is TradeDirection.BEARISH and request.entry_price <= request.exit_price)
             ):
-                return InvalidTradeDataValuesError()
+                raise InvalidTradeDataValuesError()
 
 
         trade = Trade(
