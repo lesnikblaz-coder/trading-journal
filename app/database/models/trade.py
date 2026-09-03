@@ -25,7 +25,8 @@ class Trade(Base):
     exit_price: Mapped[Decimal] = mapped_column(DECIMAL(14, 4), nullable=True)
     stop_loss_price: Mapped[Decimal] = mapped_column(DECIMAL(14, 4), nullable=False)
 
-    quantity: Mapped[int] = mapped_column(Integer, nullable=False)
+    quantity: Mapped[Decimal] = mapped_column(DECIMAL, nullable=False)
+    dollar_risk: Mapped[Decimal] = mapped_column(DECIMAL, nullable=False)
 
     opened_at: Mapped[str] = mapped_column(String(30), nullable=True)
     closed_at: Mapped[str] = mapped_column(String(30), nullable=True)
