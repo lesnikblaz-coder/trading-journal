@@ -22,7 +22,7 @@ class Trade(Base):
     direction: Mapped[enums.TradeDirection] = mapped_column(Enum(enums.TradeDirection), nullable=False)
 
     entry_price: Mapped[Decimal] = mapped_column(DECIMAL(14, 4), nullable=False)
-    exit_price: Mapped[Decimal] = mapped_column(DECIMAL(14, 4), nullable=False)
+    exit_price: Mapped[Decimal] = mapped_column(DECIMAL(14, 4), nullable=True)
     stop_loss_price: Mapped[Decimal] = mapped_column(DECIMAL(14, 4), nullable=False)
 
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
