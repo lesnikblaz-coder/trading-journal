@@ -25,3 +25,7 @@ class InsufficientPermissions(AppException):
 class EntityNotFoundError(AppException):
     status_code = 404
     detail = "Entity not found."
+
+class InvalidTradingSystemError(AppException):
+    status_code = 401
+    detail = "Non-existent trading system."
