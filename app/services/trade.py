@@ -59,3 +59,9 @@ class TradeService:
             user_id=user_id,
             **request.model_dump(exclude_none=True)
         )
+
+    async def delete(self, trade_id: UUID, user_id: UUID) -> None:
+        return await self.trade_repo.delete(
+            entity_id=trade_id,
+            user_id=user_id
+        )
