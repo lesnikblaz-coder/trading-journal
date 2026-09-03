@@ -33,12 +33,12 @@ class TradeResponse(BaseModel):
     opened_at: str
     closed_at: str
     status: enums.TradeStatus
-    realized_pnl: Decimal
-    realized_pnl_percent: Decimal
-    result_r: Decimal
+    realized_pnl: Decimal | None
+    realized_pnl_percent: Decimal | None
+    result_r: Decimal | None
     notes: str
     created_at: datetime
-    updated_at: datetime
+    updated_at: datetime | None
 
 class TradeUpdateRequest(BaseModel):
     symbol: str | None = None
