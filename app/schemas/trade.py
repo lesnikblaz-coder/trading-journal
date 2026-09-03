@@ -16,9 +16,6 @@ class TradeCreateRequest(BaseModel):
     opened_at: str | None = None
     closed_at: str | None = None
     status: enums.TradeStatus
-    realized_pnl: Decimal | None = None
-    realized_pnl_percent: Decimal | None = None
-    result_r: Decimal | None = None
     notes: str | None = None
 
 class TradeResponse(BaseModel):
@@ -53,7 +50,4 @@ class TradeUpdateRequest(BaseModel):
     opened_at: str | None = None
     closed_at: str | None = None
     status: enums.TradeStatus | None = None
-    realized_pnl: Decimal | None = None
-    realized_pnl_percent: Decimal | None = None
-    result_r: Decimal | None = None
     notes: str | None = None
