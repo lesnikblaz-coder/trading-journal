@@ -28,7 +28,7 @@ class TradeService:
             raise InvalidTradeDataValuesError()
 
 
-        if request.exit_price is not None:
+        if request.exit_price not in (None, 0):
             if (
                     (request.direction is TradeDirection.BULLISH and request.exit_price <= request.entry_price)
                     or
