@@ -29,3 +29,7 @@ class EntityNotFoundError(AppException):
 class InvalidTradingSystemError(AppException):
     status_code = 401
     detail = "Non-existent trading system."
+
+class InvalidTradeDataValuesError(AppException):
+    status_code = 422
+    detail = "Invalid trade data (entry/stop loss/exit price for trade direction)."
