@@ -1,14 +1,19 @@
 from fastapi import Depends
 from typing import Annotated
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
+
 from app.database.base import AsyncSessionLocal
+from app.database.models.user import User
+
 from app.services.trading_system import TradingSystemService
+from app.services.auth import AuthService
+from app.services.trade import TradeService
+
 from app.repositories.trading_system import TradingSystemRepo
 from app.repositories.user import UserRepo
-from app.services.auth import AuthService
-from app.database.models.user import User
+from app.repositories.trade import TradeRepo
+
 from app.core.security import oauth2_scheme
 
 
@@ -55,3 +60,19 @@ async def _get_trading_system_service(repo: TradingSystemRepoDep) -> TradingSyst
     return TradingSystemService(repo)
 
 TradingSystemServiceDep = Annotated[TradingSystemService, Depends(_get_trading_system_service)]
+
+
+# ---------- TRADE ----------
+async def _get_trade_repo(session: SessionDep) -> TradeRepo:
+    return TradeRepo(session)
+
+TradeRepoDep = Annotated[TradeRepo, Depends(_get_trade_repo)]
+
+
+async def _get_trade_service(t_repo: TradeRepoDep, t_s_repo: TradingSystemRepoDep) -> TradeService:
+    return TradeService(
+        t_repo,
+        t_s_repo
+    )
+
+TradeServiceDep = Annotated[TradeService, Depends(_get_trade_service)]
