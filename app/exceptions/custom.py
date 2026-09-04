@@ -33,3 +33,7 @@ class InvalidTradingSystemError(AppException):
 class InvalidTradeDataValuesError(AppException):
     status_code = 422
     detail = "Invalid trade data (entry/stop loss/exit price for trade direction)."
+
+class NoTradesFoundError(AppException):
+    status_code = 404
+    detail = "No trades found."
