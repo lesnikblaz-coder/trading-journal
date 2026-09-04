@@ -13,7 +13,6 @@ class AnalyticsOverviewResponse(BaseModel):
 
     avg_winner: float
     avg_loser: float
-    avg_r: float
 
     profit_factor: float
 
