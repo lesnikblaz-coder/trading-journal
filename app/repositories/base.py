@@ -42,10 +42,13 @@ class BaseRepo(Generic[ModelT]):
         if entity is None:
             raise EntityNotFoundError()
 
-        for field, value in fields.items():
+        update_data = fields["update_data"]
+
+        for field, value in update_data.items():
             setattr(entity, field, value)
 
         await self.session.flush()
+        await self.session.refresh(entity)
 
         return entity
 
