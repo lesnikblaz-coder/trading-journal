@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from decimal import Decimal
 from uuid import UUID
 from datetime import datetime
@@ -9,9 +9,9 @@ from app import enums
 class TradeCreateRequest(BaseModel):
     symbol: str
     direction: enums.TradeDirection
-    entry_price: Decimal
-    exit_price: Decimal | None = None
-    stop_loss_price: Decimal
+    entry_price: Decimal = Field(gt=0)
+    exit_price: Decimal | None = Field(default=None, gt=0)
+    stop_loss_price: Decimal = Field(ge=0)
     quantity: int
     dollar_risk: Decimal
     opened_at: str | None = None
@@ -45,9 +45,9 @@ class TradeResponse(BaseModel):
 class TradeUpdateRequest(BaseModel):
     symbol: str | None = None
     direction: enums.TradeDirection | None = None
-    entry_price: Decimal | None = None
-    exit_price: Decimal | None = None
-    stop_loss_price: Decimal | None = None
+    entry_price: Decimal | None = Field(default=None, gt=0)
+    exit_price: Decimal | None = Field(default=None, gt=0)
+    stop_loss_price: Decimal | None = Field(default=None, ge=0)
     quantity: int | None = None
     dollar_risk: Decimal | None = None
     opened_at: str | None = None
