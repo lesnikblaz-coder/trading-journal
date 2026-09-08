@@ -58,6 +58,6 @@ class BaseRepo(Generic[ModelT]):
         if entity is None:
             raise EntityNotFoundError()
 
-        entity = await self.session.delete(entity)
+        await self.session.delete(entity)
 
         return entity
