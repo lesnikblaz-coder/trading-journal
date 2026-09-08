@@ -9,7 +9,7 @@ class TradingSystemService:
     def __init__(self, trading_system_repo: TradingSystemRepo):
         self.repo = trading_system_repo
 
-    async def create(self, request: sc.TradingSystemRequest, user_id: UUID) -> sc.TradingSystemResponse:
+    async def create(self, request: sc.TradingSystemRequest, user_id: UUID) -> TradingSystem:
 
         trading_system = TradingSystem(
             user_id=user_id,
@@ -23,13 +23,13 @@ class TradingSystemService:
 
         return [sc.TradingSystemResponse.model_validate(r) for r in result]
 
-    async def get_by_id(self, trading_system_id: UUID, user_id: UUID) -> sc.TradingSystemResponse | None:
+    async def get_by_id(self, trading_system_id: UUID, user_id: UUID) -> TradingSystem | None:
         return await self.repo.get_by_id(
             entity_id=trading_system_id,
             user_id=user_id
         )
 
-    async def update(self, trading_system_id: UUID, user_id: UUID, update_data: sc.TradingSystemUpdate) -> sc.TradingSystemResponse:
+    async def update(self, trading_system_id: UUID, user_id: UUID, update_data: sc.TradingSystemUpdate) -> TradingSystem:
         return await self.repo.update(
             entity_id=trading_system_id,
             user_id=user_id,
