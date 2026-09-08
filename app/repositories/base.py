@@ -36,13 +36,11 @@ class BaseRepo(Generic[ModelT]):
 
         return result.scalar_one_or_none()
 
-    async def update(self, entity_id: UUID, user_id: UUID | None = None, **fields: Any) -> ModelT:
+    async def update(self, entity_id: UUID, update_data: dict, user_id: UUID | None = None) -> ModelT:
         entity = await self.get_by_id(entity_id, user_id)
 
         if entity is None:
             raise EntityNotFoundError()
-
-        update_data = fields["update_data"]
 
         for field, value in update_data.items():
             setattr(entity, field, value)
