@@ -1,7 +1,7 @@
 from decimal import Decimal
 from uuid import UUID, uuid4
-from datetime import datetime
-from sqlalchemy import DECIMAL, String, Enum, ForeignKey, Integer, DateTime, func
+from datetime import datetime, date
+from sqlalchemy import DECIMAL, String, Enum, ForeignKey, Date, DateTime, func
 from sqlalchemy import UUID as sUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -28,8 +28,8 @@ class Trade(Base):
     quantity: Mapped[Decimal] = mapped_column(DECIMAL, nullable=False)
     dollar_risk: Mapped[Decimal] = mapped_column(DECIMAL, nullable=False)
 
-    opened_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
-    closed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
+    opened_at: Mapped[date] = mapped_column(Date, nullable=True)
+    closed_at: Mapped[date] = mapped_column(Date, nullable=True)
 
     status: Mapped[enums.TradeStatus] = mapped_column(Enum(enums.TradeStatus), nullable=False, default=enums.TradeStatus.ACTIVE)
 
