@@ -1,7 +1,7 @@
 from pydantic import BaseModel, ConfigDict, Field
 from decimal import Decimal
 from uuid import UUID
-from datetime import datetime
+from datetime import datetime, date
 
 from app import enums
 
@@ -14,8 +14,8 @@ class TradeCreateRequest(BaseModel):
     stop_loss_price: Decimal = Field(ge=0)
     quantity: int
     dollar_risk: Decimal
-    opened_at: str | None = None
-    closed_at: str | None = None
+    opened_at: date | None = None
+    closed_at: date | None = None
     status: enums.TradeStatus
     notes: str | None = None
 
@@ -28,11 +28,11 @@ class TradeResponse(BaseModel):
     symbol: str
     direction: enums.TradeDirection
     entry_price: Decimal
-    exit_price: Decimal
+    exit_price: Decimal | None
     stop_loss_price: Decimal
     quantity: int
-    opened_at: str
-    closed_at: str
+    opened_at: date | None
+    closed_at: date | None
     status: enums.TradeStatus
     dollar_risk: Decimal
     realized_pnl: Decimal | None
@@ -50,7 +50,7 @@ class TradeUpdateRequest(BaseModel):
     stop_loss_price: Decimal | None = Field(default=None, ge=0)
     quantity: int | None = None
     dollar_risk: Decimal | None = None
-    opened_at: str | None = None
-    closed_at: str | None = None
+    opened_at: date | None = None
+    closed_at: date | None = None
     status: enums.TradeStatus | None = None
     notes: str | None = None
