@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class AnalyticsOverviewResponse(BaseModel):
@@ -13,3 +13,7 @@ class AnalyticsOverviewResponse(BaseModel):
     avg_loser: float
     profit_factor: float| None
     expectancy: float
+
+class PerformanceRequest(BaseModel):
+    year: int
+    month: int = Field(ge=1, le=12)
