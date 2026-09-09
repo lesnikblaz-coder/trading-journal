@@ -28,8 +28,8 @@ class Trade(Base):
     quantity: Mapped[Decimal] = mapped_column(DECIMAL, nullable=False)
     dollar_risk: Mapped[Decimal] = mapped_column(DECIMAL, nullable=False)
 
-    opened_at: Mapped[str] = mapped_column(String(30), nullable=True)
-    closed_at: Mapped[str] = mapped_column(String(30), nullable=True)
+    opened_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
+    closed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
 
     status: Mapped[enums.TradeStatus] = mapped_column(Enum(enums.TradeStatus), nullable=False, default=enums.TradeStatus.ACTIVE)
 
