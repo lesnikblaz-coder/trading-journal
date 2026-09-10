@@ -48,20 +48,22 @@ class OverviewCalculations:
             pnl = trade_calc.calculate_pnl(trade.dollar_risk)
             r_multiple = trade_calc.calculate_r_multiple()
 
-            all_r_multiples.append(r_multiple)
+            if r_multiple is not None:
+                all_r_multiples.append(r_multiple)
 
-            if pnl > 0:
-                winners += 1
-                winner_r_multiples.append(r_multiple)
-                gross_profit += pnl
+                if pnl is not None:
+                    if pnl > 0:
+                        winners += 1
+                        winner_r_multiples.append(r_multiple)
+                        gross_profit += pnl
 
-            elif pnl < 0:
-                losers += 1
-                loser_r_multiples.append(r_multiple)
-                gross_loss += abs(pnl)
+                    elif pnl < 0:
+                        losers += 1
+                        loser_r_multiples.append(r_multiple)
+                        gross_loss += abs(pnl)
 
-            else:
-                breakevens += 1
+                    else:
+                        breakevens += 1
 
         return OverviewCalculationsResult(
             total_trades=total_trades,
