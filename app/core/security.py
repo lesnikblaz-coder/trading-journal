@@ -1,4 +1,6 @@
 import jwt
+import secrets
+import hashlib
 
 from pwdlib import PasswordHash
 from fastapi.security import OAuth2PasswordBearer
@@ -21,6 +23,7 @@ def verify_pw(plain_pw: str, hashed_pw: str) -> bool:
     return pw_hash.verify(plain_pw, hashed_pw)
 
 
+# ACCESS TOKEN
 def create_access_token(user_id: UUID) -> str:
     expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
@@ -48,3 +51,11 @@ def decode_access_token(token: str) -> UUID:
 
     except (jwt.InvalidTokenError, ValueError, KeyError):
         raise InvalidTokenError()
+
+
+# REFRESH TOKEN
+def create_refresh_token() -> str:
+    return secrets.token_urlsafe(64)
+
+def hash_refresh_token(token: str) -> str:
+    return hashlib.sha256(token.encode()).hexdigest()
