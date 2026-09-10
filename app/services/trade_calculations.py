@@ -15,8 +15,11 @@ class TradeCalculations:
         self.direction = direction
 
 
-    def calculate_pnl(self, dollar_risk: Decimal) -> Decimal:
+    def calculate_pnl(self, dollar_risk: Decimal) -> Decimal | None:
         r_multiple = self.calculate_r_multiple()
+
+        if not r_multiple:
+            return None
 
         return r_multiple * dollar_risk
 
@@ -27,7 +30,10 @@ class TradeCalculations:
         return (pnl / acc_size) * 100
 
 
-    def calculate_r_multiple(self) -> Decimal:
+    def calculate_r_multiple(self) -> Decimal | None:
+        if self.exit_price is None:
+            return None
+
         if self.direction is TradeDirection.BULLISH:
             return (self.exit_price - self.entry_price) / (self.entry_price - self.stop_loss_price)
 
