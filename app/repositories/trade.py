@@ -7,7 +7,7 @@ from app.repositories.base import BaseRepo
 from app.database.models.trade import Trade
 
 
-class TradeRepo(BaseRepo):
+class TradeRepo(BaseRepo[Trade]):
     model = Trade
 
     async def get_all_for_system(self, system_id: UUID, user_id: UUID) -> Sequence[Trade]:
