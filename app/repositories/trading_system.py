@@ -6,7 +6,7 @@ from app.repositories.base import BaseRepo
 from app.database.models.trading_system import TradingSystem
 
 
-class TradingSystemRepo(BaseRepo):
+class TradingSystemRepo(BaseRepo[TradingSystem]):
     model = TradingSystem
 
     async def get_by_user(self, user_id: UUID) -> Sequence[TradingSystem]:
