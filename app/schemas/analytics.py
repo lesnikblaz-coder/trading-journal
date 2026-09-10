@@ -15,5 +15,5 @@ class AnalyticsOverviewResponse(BaseModel):
     expectancy: float
 
 class PerformanceRequest(BaseModel):
-    year: int
+    year: int = Field(default=2026, ge=1800)
     month: int = Field(ge=1, le=12)
