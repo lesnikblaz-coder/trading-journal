@@ -4,9 +4,10 @@ from app.core import security
 from app.core.config import settings
 from app.repositories.user import UserRepo
 from app.repositories.refresh_token import RefreshTokenRepo
-from app.exceptions.custom import DuplicateEmailError, InvalidCredentialsError
+from app.exceptions.custom import DuplicateEmailError, InvalidCredentialsError, InvalidTokenError
 from app.schemas.auth import TokenResponse
 from app.database.models.user import User
+from app.database.models.refresh_token import RefreshToken
 from app.core.security import decode_access_token
 from app.exceptions.custom import UserNotFoundError
 
@@ -33,6 +34,30 @@ class AuthService:
         return TokenResponse(
             access_token=access_token,
             refresh_token=refresh_token
+        )
+
+    @staticmethod
+    def _get_access_expiry() -> datetime:
+        return datetime.now(timezone.utc) + timedelta(
+            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+        )
+
+    @staticmethod
+    def _get_refresh_expiry() -> datetime:
+        return datetime.now(timezone.utc) + timedelta(
+            days=settings.REFRESH_TOKEN_EXPIRE_DAYS
+        )
+
+    async def _issue_refresh(self, user: User) -> RefreshToken:
+        refresh_token = security.create_refresh_token()
+        refresh_token_hash = security.hash_refresh_token(refresh_token)
+
+        expire_at = self._get_refresh_expiry()
+
+        return await self.refresh_repo.create(
+            user_id=user.id,
+            token_hash=refresh_token_hash,
+            expire_at=expire_at
         )
 
 
@@ -65,3 +90,36 @@ class AuthService:
             raise UserNotFoundError()
 
         return user
+
+    async def refresh(self, refresh_token: str) -> TokenResponse:
+        token_hash = security.hash_refresh_token(refresh_token)
+
+        stored_token = await self.refresh_repo.get_by_hash(token_hash)
+
+        if not stored_token:
+            raise InvalidTokenError()
+
+        now = datetime.now(timezone.utc)
+
+        if (
+                stored_token.expires_at <= now
+                or
+                stored_token.revoked_at is not None):
+            raise InvalidTokenError()
+
+        user = await self.repo.get_by_id(stored_token.user_id)
+
+        if not user:
+            raise UserNotFoundError()
+
+        self.refresh_repo.revoke(stored_token)
+
+        new_stored = await self._issue_refresh(user)
+        new_refresh_token = security.create_refresh_token()
+
+        stored_token.replaced_by_id = new_stored.id
+
+        return TokenResponse(
+            access_token=security.create_access_token(user.id),
+            refresh_token=new_refresh_token
+        )
