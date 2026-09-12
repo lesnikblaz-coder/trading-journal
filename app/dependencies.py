@@ -14,6 +14,7 @@ from app.services.analytics import AnalyticsService
 from app.repositories.trading_system import TradingSystemRepo
 from app.repositories.user import UserRepo
 from app.repositories.trade import TradeRepo
+from app.repositories.refresh_token import RefreshTokenRepo
 
 from app.core.security import oauth2_scheme
 
@@ -38,8 +39,14 @@ UserRepoDep = Annotated[UserRepo, Depends(_get_user_repo)]
 # ---------- AUTH ----------
 TokenDep = Annotated[str, Depends(oauth2_scheme)]
 
-async def _get_auth_service(repo: UserRepoDep) -> AuthService:
-    return AuthService(repo)
+async def _get_refresh_token_repo(session: SessionDep) -> RefreshTokenRepo:
+    return RefreshTokenRepo(session)
+
+RefreshTokenRepoDep = Annotated[RefreshTokenRepo, Depends(_get_refresh_token_repo)]
+
+
+async def _get_auth_service(repo: UserRepoDep, refresh_repo: RefreshTokenRepoDep) -> AuthService:
+    return AuthService(repo, refresh_repo)
 
 AuthServiceDep = Annotated[AuthService, Depends(_get_auth_service)]
 
