@@ -23,12 +23,12 @@ class AuthService:
         refresh_token = security.create_refresh_token()
         refresh_token_hash = security.hash_refresh_token(refresh_token)
 
-        expire_at = datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+        expires_at = datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
 
         await self.refresh_repo.create(
             user_id=user.id,
             token_hash=refresh_token_hash,
-            expire_at=expire_at
+            expires_at=expires_at
         )
 
         return TokenResponse(
@@ -52,12 +52,12 @@ class AuthService:
         refresh_token = security.create_refresh_token()
         refresh_token_hash = security.hash_refresh_token(refresh_token)
 
-        expire_at = self._get_refresh_expiry()
+        expires_at = self._get_refresh_expiry()
 
         return await self.refresh_repo.create(
             user_id=user.id,
             token_hash=refresh_token_hash,
-            expire_at=expire_at
+            expires_at=expires_at
         )
 
 

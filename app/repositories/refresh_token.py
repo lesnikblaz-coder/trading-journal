@@ -10,11 +10,11 @@ class RefreshTokenRepo:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def create(self, user_id: UUID, token_hash: str, expire_at: datetime) -> RefreshToken:
+    async def create(self, user_id: UUID, token_hash: str, expires_at: datetime) -> RefreshToken:
         token = RefreshToken(
             user_id=user_id,
             token_hash=token_hash,
-            expire_at=expire_at
+            expires_at=expires_at
         )
 
         self.session.add(token)
