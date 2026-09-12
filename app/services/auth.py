@@ -17,29 +17,29 @@ class AuthService:
         self.repo = repo
         self.refresh_repo = refresh_repo
 
-    async def _issue_tokens(self, user: User) -> TokenResponse:
-        access_token = security.create_access_token(user.id)
 
+    async def _issue_refresh(self, user: User) -> tuple[str, RefreshToken]:
         refresh_token = security.create_refresh_token()
         refresh_token_hash = security.hash_refresh_token(refresh_token)
 
-        expires_at = datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+        expires_at = self._get_refresh_expiry()
 
-        await self.refresh_repo.create(
+        stored_token = await self.refresh_repo.create(
             user_id=user.id,
             token_hash=refresh_token_hash,
             expires_at=expires_at
         )
 
+        return refresh_token, stored_token
+
+    async def _issue_tokens(self, user: User) -> TokenResponse:
+        access_token = security.create_access_token(user.id)
+
+        refresh_token, _ = self._issue_refresh(user)
+
         return TokenResponse(
             access_token=access_token,
             refresh_token=refresh_token
-        )
-
-    @staticmethod
-    def _get_access_expiry() -> datetime:
-        return datetime.now(timezone.utc) + timedelta(
-            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
         )
 
     @staticmethod
@@ -48,17 +48,6 @@ class AuthService:
             days=settings.REFRESH_TOKEN_EXPIRE_DAYS
         )
 
-    async def _issue_refresh(self, user: User) -> RefreshToken:
-        refresh_token = security.create_refresh_token()
-        refresh_token_hash = security.hash_refresh_token(refresh_token)
-
-        expires_at = self._get_refresh_expiry()
-
-        return await self.refresh_repo.create(
-            user_id=user.id,
-            token_hash=refresh_token_hash,
-            expires_at=expires_at
-        )
 
 
     async def register(self, email: str, pw: str) -> TokenResponse:
@@ -114,8 +103,7 @@ class AuthService:
 
         self.refresh_repo.revoke(stored_token)
 
-        new_stored = await self._issue_refresh(user)
-        new_refresh_token = security.create_refresh_token()
+        new_refresh_token, new_stored = await self._issue_refresh(user)
 
         stored_token.replaced_by_id = new_stored.id
 
