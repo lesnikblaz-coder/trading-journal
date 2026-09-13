@@ -48,6 +48,9 @@ def decode_access_token(token: str) -> UUID:
             algorithms=[settings.ALGORITHM]
         )
 
+        if payload["type"] != "access":
+            raise InvalidTokenError()
+
         return UUID(payload["sub"])
 
     except (jwt.InvalidTokenError, ValueError, KeyError):
