@@ -35,7 +35,7 @@ class AuthService:
     async def _issue_tokens(self, user: User) -> TokenResponse:
         access_token = security.create_access_token(user.id)
 
-        refresh_token, _ = self._issue_refresh(user)
+        refresh_token, _ = await self._issue_refresh(user)
 
         return TokenResponse(
             access_token=access_token,
