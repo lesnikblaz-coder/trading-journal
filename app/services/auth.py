@@ -111,3 +111,16 @@ class AuthService:
             access_token=security.create_access_token(user.id),
             refresh_token=new_refresh_token
         )
+
+    async def logout(self, refresh_token: str) -> None:
+        token_hash = security.hash_refresh_token(refresh_token)
+
+        stored_token = await self.refresh_repo.get_by_hash(token_hash)
+
+        if not stored_token:
+            return
+
+        if stored_token.revoked_at is not None:
+            return
+
+        self.refresh_repo.revoke(stored_token)
