@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app import dependencies as dep
@@ -23,3 +23,7 @@ async def token(service: dep.AuthServiceDep, request: OAuth2PasswordRequestForm 
 @router.post("/auth/refresh", response_model=auth_sc.TokenResponse)
 async def refresh(service: dep.AuthServiceDep, request: auth_sc.RefreshRequest) -> auth_sc.TokenResponse:
     return await service.refresh(request.refresh_token)
+
+@router.post("/auth/logout", status_code=status.HTTP_204_NO_CONTENT)
+async def logout(service: dep.AuthServiceDep, request: auth_sc.LogoutRequest) -> None:
+    await service.logout(request.refresh_token)
