@@ -19,3 +19,7 @@ async def login(service: dep.AuthServiceDep, request: auth_sc.Login) -> auth_sc.
 @router.post("/auth/token", response_model=auth_sc.TokenResponse)
 async def token(service: dep.AuthServiceDep, request: OAuth2PasswordRequestForm = Depends()):
     return await service.login(request.username, request.password)
+
+@router.post("/auth/refresh", response_model=auth_sc.TokenResponse)
+async def refresh(service: dep.AuthServiceDep, request: auth_sc.RefreshRequest) -> auth_sc.TokenResponse:
+    return await service.refresh(request.refresh_token)
