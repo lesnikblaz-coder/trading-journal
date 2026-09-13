@@ -12,3 +12,6 @@ class UserCredentials(BaseModel):
 
 class Register(UserCredentials): ...
 class Login(UserCredentials): ...
+
+class RefreshRequest(BaseModel):
+    refresh_token: str
