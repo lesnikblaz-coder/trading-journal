@@ -5,7 +5,7 @@ from app.core.config import settings
 from app.repositories.user import UserRepo
 from app.repositories.refresh_token import RefreshTokenRepo
 from app.exceptions.custom import DuplicateEmailError, InvalidCredentialsError, InvalidTokenError
-from app.schemas.auth import TokenResponse
+from app.schemas.auth import TokenPair
 from app.database.models.user import User
 from app.database.models.refresh_token import RefreshToken
 from app.core.security import decode_access_token
@@ -32,12 +32,12 @@ class AuthService:
 
         return refresh_token, stored_token
 
-    async def _issue_tokens(self, user: User) -> TokenResponse:
+    async def _issue_tokens(self, user: User) -> TokenPair:
         access_token = security.create_access_token(user.id)
 
         refresh_token, _ = await self._issue_refresh(user)
 
-        return TokenResponse(
+        return TokenPair(
             access_token=access_token,
             refresh_token=refresh_token
         )
@@ -50,7 +50,7 @@ class AuthService:
 
 
 
-    async def register(self, email: str, pw: str) -> TokenResponse:
+    async def register(self, email: str, pw: str) -> TokenPair:
         if await self.repo.get_by_email(email):
             raise DuplicateEmailError()
 
@@ -63,7 +63,7 @@ class AuthService:
 
         return await self._issue_tokens(user)
 
-    async def login(self, email: str, pw: str) -> TokenResponse:
+    async def login(self, email: str, pw: str) -> TokenPair:
         user = await self.repo.get_by_email(email)
 
         if not user or not security.verify_pw(pw, user.hashed_pw):
@@ -80,7 +80,7 @@ class AuthService:
 
         return user
 
-    async def refresh(self, refresh_token: str) -> TokenResponse:
+    async def refresh(self, refresh_token: str) -> TokenPair:
         token_hash = security.hash_refresh_token(refresh_token)
 
         stored_token = await self.refresh_repo.get_by_hash(token_hash)
@@ -107,7 +107,7 @@ class AuthService:
 
         stored_token.replaced_by_id = new_stored.id
 
-        return TokenResponse(
+        return TokenPair(
             access_token=security.create_access_token(user.id),
             refresh_token=new_refresh_token
         )

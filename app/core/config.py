@@ -17,7 +17,9 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30
+    REFRESH_COOKIE_EXPIRE_TIME: int = 60 * 60 * 24 * 30
     ALGORITHM: str = "HS256"
+    ENVIRONMENT: str = "development"
 
     @property
     def async_database_url(self) -> str:
