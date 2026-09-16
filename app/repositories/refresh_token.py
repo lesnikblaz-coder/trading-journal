@@ -30,6 +30,6 @@ class RefreshTokenRepo:
 
         return result.scalar_one_or_none()
 
-    @staticmethod
-    def revoke(token: RefreshToken) -> None:
+    async def revoke(self, token: RefreshToken) -> None:
         token.revoked_at = datetime.now(timezone.utc)
+        await self.session.flush()

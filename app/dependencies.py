@@ -1,4 +1,4 @@
-from fastapi import Depends
+from fastapi import Depends, Request
 from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,11 +10,14 @@ from app.services.trading_system import TradingSystemService
 from app.services.auth import AuthService
 from app.services.trade import TradeService
 from app.services.analytics import AnalyticsService
+from app.services.trade_review import TradeReviewService
 
 from app.repositories.trading_system import TradingSystemRepo
 from app.repositories.user import UserRepo
 from app.repositories.trade import TradeRepo
 from app.repositories.refresh_token import RefreshTokenRepo
+
+from app.ai.gemini_client import GeminiClient
 
 from app.core.security import oauth2_scheme
 
@@ -91,3 +94,15 @@ async def _get_analytics_service(trade_repo: TradeRepoDep) -> AnalyticsService:
     return AnalyticsService(trade_repo)
 
 AnalyticsServiceDep = Annotated[AnalyticsService, Depends(_get_analytics_service)]
+
+
+# ---------- AI ----------
+async def _get_trade_review_service(request: Request, trade_repo: TradeRepoDep) -> TradeReviewService:
+    gemini = GeminiClient(request.app.state.gemini)
+
+    return TradeReviewService(
+        client=gemini,
+        trade_repo=trade_repo
+    )
+
+TradeReviewServiceDep = Annotated[TradeReviewService, Depends(_get_trade_review_service)]

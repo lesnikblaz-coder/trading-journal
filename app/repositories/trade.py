@@ -1,6 +1,7 @@
 from uuid import UUID
 from typing import Sequence
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from datetime import datetime, timezone
 
 from app.repositories.base import BaseRepo
@@ -39,3 +40,17 @@ class TradeRepo(BaseRepo[Trade]):
         )
 
         return result.scalars().all()
+
+    async def get_by_id_fetch_system(self, trade_id: UUID, user_id: UUID | None = None) -> Trade | None:
+        query = (
+            select(Trade)
+            .where(Trade.id == trade_id)
+            .options(selectinload(Trade.trading_system))
+        )
+
+        if user_id is not None:
+            query = query.where(Trade.user_id == user_id)
+
+        result = await self.session.execute(query)
+
+        return result.scalar_one_or_none()

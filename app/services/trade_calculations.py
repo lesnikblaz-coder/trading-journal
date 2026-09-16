@@ -18,7 +18,7 @@ class TradeCalculations:
     def calculate_pnl(self, dollar_risk: Decimal) -> Decimal | None:
         r_multiple = self.calculate_r_multiple()
 
-        if not r_multiple:
+        if r_multiple is None:
             return None
 
         return r_multiple * dollar_risk
