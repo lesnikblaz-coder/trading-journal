@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
 
-class AIClient(ABC):
+from app.schemas.ai import AITradeReviewInput, AITradeReviewResponse
 
+
+class AIClient(ABC):
     @abstractmethod
-    async def generate_trade_review(self):
+    async def generate_trade_review(self, data: AITradeReviewInput) -> AITradeReviewResponse:
         pass

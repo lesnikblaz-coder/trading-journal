@@ -3,7 +3,7 @@ from uuid import UUID
 from app.repositories.trade import TradeRepo
 from app.repositories.trading_system import TradingSystemRepo
 from app.schemas import trade as sc
-from app.exceptions.custom import InvalidTradingSystemError, InvalidTradeDataValuesError
+from app.exceptions.custom import InvalidTradingSystemError, InvalidTradeDataValuesError, EntityNotFoundError
 from app.database.models.trade import Trade
 from app.enums import TradeDirection
 
@@ -51,7 +51,12 @@ class TradeService:
         return [sc.TradeResponse.model_validate(r) for r in result]
 
     async def get_by_id(self, trade_id: UUID, user_id: UUID) -> Trade | None:
-        return await self.trade_repo.get_by_id(trade_id, user_id)
+        trade = await self.trade_repo.get_by_id(trade_id, user_id)
+
+        if not trade:
+            raise EntityNotFoundError(detail="No trade found.")
+
+        return trade
 
     async def update(self, trade_id: UUID, user_id: UUID, request: sc.TradeUpdateRequest) -> Trade:
         return await self.trade_repo.update(
@@ -61,7 +66,7 @@ class TradeService:
         )
 
     async def delete(self, trade_id: UUID, user_id: UUID) -> None:
-        return await self.trade_repo.delete(
+        await self.trade_repo.delete(
             entity_id=trade_id,
             user_id=user_id
         )
