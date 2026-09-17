@@ -1,11 +1,12 @@
 from uuid import UUID
 from typing import Sequence
-from sqlalchemy import select
+from sqlalchemy import select, func, case
 from sqlalchemy.orm import selectinload
 from datetime import datetime, timezone
 
 from app.repositories.base import BaseRepo
 from app.database.models.trade import Trade
+from app.enums import TradeDirection
 
 
 class TradeRepo(BaseRepo[Trade]):
@@ -54,3 +55,13 @@ class TradeRepo(BaseRepo[Trade]):
         result = await self.session.execute(query)
 
         return result.scalar_one_or_none()
+
+    async def get_by_symbol(self, symbol: str, user_id: UUID) -> Sequence[Trade]:
+        query = select(Trade).where(
+            Trade.symbol == symbol,
+            Trade.user_id == user_id
+        )
+
+        result = await self.session.execute(query)
+
+        return result.scalars().all()

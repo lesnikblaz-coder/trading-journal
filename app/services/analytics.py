@@ -42,3 +42,8 @@ class AnalyticsService:
         trades = list(await self.repo.get_for_month(year, month, user_id))
 
         return await self._overview_base(trades)
+
+    async def overview_by_symbol(self, symbol: str, user_id: UUID) -> sc.AnalyticsOverviewResponse:
+        trades = list(await self.repo.get_by_symbol(symbol, user_id))
+
+        return await self._overview_base(trades)
