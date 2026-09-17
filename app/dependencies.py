@@ -17,7 +17,8 @@ from app.repositories.user import UserRepo
 from app.repositories.trade import TradeRepo
 from app.repositories.refresh_token import RefreshTokenRepo
 
-from app.ai.gemini_client import GeminiClient
+from app.ai.clients.gemini_client import GeminiClient
+from app.ai.tools.analytics import AnalyticsTools
 
 from app.core.security import oauth2_scheme
 
@@ -96,12 +97,27 @@ async def _get_analytics_service(trade_repo: TradeRepoDep) -> AnalyticsService:
 AnalyticsServiceDep = Annotated[AnalyticsService, Depends(_get_analytics_service)]
 
 
-# ---------- AI ----------
-async def _get_trade_review_service(request: Request, trade_repo: TradeRepoDep) -> TradeReviewService:
-    gemini = GeminiClient(request.app.state.gemini)
+# ---------- AI CLIENT ----------
+async def _get_gemini_client(request: Request, analytics_tools: AnalyticsToolsDep, trading_system_repo: TradingSystemRepoDep) -> GeminiClient:
+    return GeminiClient(
+        client=request.app.state.gemini,
+        analytics_tools=analytics_tools,
+        trading_system_repo=trading_system_repo
+    )
 
+GeminiClientDep = Annotated[GeminiClient, Depends(_get_gemini_client)]
+
+
+# ---------- AI ----------
+async def _get_analytics_tools(analytics_service: AnalyticsServiceDep) -> AnalyticsTools:
+    return AnalyticsTools(analytics_service=analytics_service)
+
+AnalyticsToolsDep = Annotated[AnalyticsTools, Depends(_get_analytics_tools)]
+
+
+async def _get_trade_review_service(client: GeminiClientDep, trade_repo: TradeRepoDep) -> TradeReviewService:
     return TradeReviewService(
-        client=gemini,
+        client=client,
         trade_repo=trade_repo
     )
 

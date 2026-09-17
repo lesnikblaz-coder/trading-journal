@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from datetime import date
 from decimal import Decimal
 
@@ -47,3 +47,24 @@ class TradingSystemInput(BaseModel):
 class AITradeReviewInput(BaseModel):
     trade: TradeInput
     trading_system: TradingSystemInput
+
+class AIAnalysisRequest(BaseModel):
+    question: str
+
+class AIAnalysisResponse(BaseModel):
+    answer: str
+
+
+###
+class AIArgumentValidations(BaseModel):
+    """
+    Base class to validate AI's requested arguments for function calling.
+    """
+    model_config = ConfigDict(extra="forbid")
+
+class MonthSummaryArg(AIArgumentValidations):
+    year: int
+    month: int = Field(ge=1, le=12)
+
+class SymbolSummaryArg(AIArgumentValidations):
+    symbol: str = Field(min_length= 1, max_length=20)

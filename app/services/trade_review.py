@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from app.ai.ai_client import AIClient
+from app.ai.clients.ai_client import AIClient
 from app.repositories.trade import TradeRepo
 from app.exceptions.custom import EntityNotFoundError
 from app.schemas import ai as sc
