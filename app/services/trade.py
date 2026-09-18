@@ -26,21 +26,12 @@ class TradeService:
                 (request.direction is TradeDirection.BEARISH and request.entry_price >= request.stop_loss_price)
         ):
             raise InvalidTradeDataValuesError()
-
-
-        if request.exit_price is not None:
-            if (
-                    (request.direction is TradeDirection.BULLISH and request.exit_price <= request.entry_price)
-                    or
-                    (request.direction is TradeDirection.BEARISH and request.entry_price <= request.exit_price)
-            ):
-                raise InvalidTradeDataValuesError()
-
+        
 
         trade = Trade(
             user_id=user_id,
             trading_system_id=system_id,
-            **request.model_dump(exclude_none=True)
+            **request.model_dump(exclude_none=True),
         )
 
         return await self.trade_repo.create(trade)
