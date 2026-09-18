@@ -14,6 +14,7 @@ class TradeCreateRequest(BaseModel):
     stop_loss_price: Decimal = Field(ge=0)
     quantity: int = Field(gt=0)
     dollar_risk: Decimal = Field(gt=0)
+    percent_risk: Decimal = Field(gt=0, le=100)
     opened_at: date | None = None
     closed_at: date | None = None
     status: enums.TradeStatus
@@ -36,7 +37,8 @@ class TradeResponse(BaseModel):
     exit_price: Decimal | None
     stop_loss_price: Decimal
     quantity: int | None = Field(default=None, gt=0)
-    dollar_risk: Decimal | None = Field(default=None, gt=0)
+    dollar_risk: Decimal = Field(gt=0)
+    percent_risk: Decimal = Field(gt=0, le=100)
     opened_at: date | None
     closed_at: date | None
     status: enums.TradeStatus
@@ -55,6 +57,7 @@ class TradeUpdateRequest(BaseModel):
     stop_loss_price: Decimal | None = Field(default=None, ge=0)
     quantity: int | None = None
     dollar_risk: Decimal | None = None
+    percent_risk: Decimal | None = None
     opened_at: date | None = None
     closed_at: date | None = None
     status: enums.TradeStatus | None = None
