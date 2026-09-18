@@ -27,6 +27,7 @@ class Trade(Base):
 
     quantity: Mapped[Decimal] = mapped_column(DECIMAL, nullable=False)
     dollar_risk: Mapped[Decimal] = mapped_column(DECIMAL, nullable=False)
+    percent_risk: Mapped[Decimal] = mapped_column(DECIMAL, nullable=False)
 
     opened_at: Mapped[date] = mapped_column(Date, nullable=True)
     closed_at: Mapped[date] = mapped_column(Date, nullable=True)
