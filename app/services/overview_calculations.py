@@ -38,14 +38,9 @@ class OverviewCalculations:
         gross_loss = Decimal("0")
 
         for trade in self.trades:
-            trade_calc = TradeCalculations(
-                trade.entry_price,
-                trade.stop_loss_price,
-                trade.exit_price,
-                trade.direction,
-            )
+            trade_calc = TradeCalculations(trade)
 
-            pnl = trade_calc.calculate_pnl(trade.dollar_risk)
+            pnl = trade_calc.calculate_pnl()
             r_multiple = trade_calc.calculate_r_multiple()
 
             if r_multiple is not None:

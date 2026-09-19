@@ -1,4 +1,5 @@
 from uuid import UUID
+from decimal import Decimal
 
 from app.repositories.trade import TradeRepo
 from app.repositories.trading_system import TradingSystemRepo
@@ -6,6 +7,7 @@ from app.schemas import trade as sc
 from app.exceptions.custom import InvalidTradingSystemError, InvalidTradeDataValuesError, EntityNotFoundError
 from app.database.models.trade import Trade
 from app.enums import TradeDirection
+from app.services.trade_calculations import TradeCalculations
 
 
 class TradeService:
@@ -26,12 +28,17 @@ class TradeService:
                 (request.direction is TradeDirection.BEARISH and request.entry_price >= request.stop_loss_price)
         ):
             raise InvalidTradeDataValuesError()
-        
+
+        calculated_data = {}
+
+        if request.exit_price is not None:
+            calculated_data = self._calculate_trade_results(request)
 
         trade = Trade(
             user_id=user_id,
             trading_system_id=system_id,
             **request.model_dump(exclude_none=True),
+            **calculated_data
         )
 
         return await self.trade_repo.create(trade)
@@ -50,6 +57,9 @@ class TradeService:
         return trade
 
     async def update(self, trade_id: UUID, user_id: UUID, request: sc.TradeUpdateRequest) -> Trade:
+
+        # add calculated data if exit price is not None
+
         return await self.trade_repo.update(
             entity_id=trade_id,
             user_id=user_id,
@@ -61,3 +71,13 @@ class TradeService:
             entity_id=trade_id,
             user_id=user_id
         )
+
+    @staticmethod
+    def _calculate_trade_results(request: sc.TradeCreateRequest) -> dict[str, Decimal]:
+        trade_calc = TradeCalculations(request)
+
+        return {
+            "realized_pnl": trade_calc.calculate_pnl(),
+            "realized_pnl_percent": trade_calc.calculate_pnl_percent(),
+            "result_r": trade_calc.calculate_r_multiple()
+        }

@@ -1,41 +1,30 @@
 from decimal import Decimal
 
 from app.enums import TradeDirection
+from app.schemas.trade import TradeCreateRequest
+from app.database.models.trade import Trade
 
 
 class TradeCalculations:
-    def __init__(
-            self,
-            entry_price: Decimal, stop_loss_price: Decimal,
-            exit_price: Decimal, direction: TradeDirection
-    ):
-        self.entry_price = entry_price
-        self.stop_loss_price = stop_loss_price
-        self.exit_price = exit_price
-        self.direction = direction
+    def __init__(self, trade: Trade | TradeCreateRequest):
+        self.trade = trade
 
-
-    def calculate_pnl(self, dollar_risk: Decimal) -> Decimal | None:
+    def calculate_pnl(self) -> Decimal:
         r_multiple = self.calculate_r_multiple()
 
-        if r_multiple is None:
-            return None
-
-        return r_multiple * dollar_risk
+        return r_multiple * self.trade.dollar_risk
 
 
-    def calculate_pnl_percent(self, dollar_risk: Decimal, acc_size: Decimal) -> Decimal:
-        pnl = self.calculate_pnl(dollar_risk)
+    def calculate_pnl_percent(self) -> Decimal:
+        pnl = self.calculate_pnl()
+
+        acc_size = (100 / self.trade.percent_risk) * self.trade.dollar_risk
 
         return (pnl / acc_size) * 100
 
-
-    def calculate_r_multiple(self) -> Decimal | None:
-        if self.exit_price is None:
-            return None
-
-        if self.direction is TradeDirection.BULLISH:
-            return (self.exit_price - self.entry_price) / (self.entry_price - self.stop_loss_price)
+    def calculate_r_multiple(self) -> Decimal:
+        if self.trade.direction is TradeDirection.BULLISH:
+            return (self.trade.exit_price - self.trade.entry_price) / (self.trade.entry_price - self.trade.stop_loss_price)
 
         # if not bullish, it's bearish
-        return (self.entry_price - self.exit_price) / (self.stop_loss_price - self.entry_price)
+        return (self.trade.entry_price - self.trade.exit_price) / (self.trade.stop_loss_price - self.trade.entry_price)
