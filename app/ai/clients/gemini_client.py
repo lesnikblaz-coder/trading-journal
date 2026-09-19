@@ -85,15 +85,14 @@ class GeminiClient(AIClient):
 
                     result = await self.analytics_tools.get_performance_by_month(
                         user_id=user_id,
+                        system_id=system_id,
                         **arguments.model_dump()
                     )
 
                 elif step.name == "get_performance_by_symbol":
-                    arguments = sc.SymbolSummaryArg.model_validate(step.arguments)
-
                     result = await self.analytics_tools.get_performance_by_symbol(
                         user_id=user_id,
-                        **arguments.model_dump()
+                        system_id=system_id,
                     )
 
                 else:
@@ -105,7 +104,7 @@ class GeminiClient(AIClient):
                     "call_id": step.id,
                     "result": [{
                         "type": "text",
-                        "text": json.dumps(result)
+                        "text": json.dumps(result, default=str)
                     }]
                 })
 

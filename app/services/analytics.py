@@ -38,12 +38,12 @@ class AnalyticsService:
 
         return await self._overview_base(trades)
 
-    async def overview_monthly_performance(self, year: int, month: int, user_id: UUID) -> sc.AnalyticsOverviewResponse:
-        trades = list(await self.repo.get_for_month(year, month, user_id))
+    async def overview_monthly_performance(self, year: int, month: int, system_id: UUID, user_id: UUID) -> sc.AnalyticsOverviewResponse:
+        trades = list(await self.repo.get_for_month(year, month, system_id, user_id))
 
         return await self._overview_base(trades)
 
-    async def overview_by_symbol(self, symbol: str, user_id: UUID) -> sc.AnalyticsOverviewResponse:
-        trades = list(await self.repo.get_by_symbol(symbol, user_id))
+    async def overview_by_symbol(self, system_id: UUID, user_id: UUID) -> list[sc.OverviewBySymbolResponse]:
+        rows = list(await self.repo.get_grouped_by_symbol(system_id, user_id))
 
-        return await self._overview_base(trades)
+        return [sc.OverviewBySymbolResponse.model_validate(row) for row in rows]

@@ -36,15 +36,11 @@ GET_PERFORMANCE_BY_MONTH = {
 GET_PERFORMANCE_BY_SYMBOL = {
     "type": "function",
     "name": "get_performance_by_symbol",
-    "description": "Returns performance statistics for the authenticated user's trade, selected by SYMBOL name. Example: Only AAPL trades, etc.",
+    "description": "Returns performance statistics for the authenticated user's trading system, combined performance by symbol name. For example, all AAPL trades combined, etc. "
+                   "Returns symbol name, total profit, total risk-reward result, average entry price and net quantity of shares.",
     "parameters": {
         "type": "object",
-        "properties": {
-            "symbol": {
-                "type": "string",
-                "description": "Symbol name for wanted performance statistics. Minimum length = 1, maximum length = 20"
-            }
-        },
-        "required": ["symbol"],
+        "properties": {},
+        "required": [],
     }
 }

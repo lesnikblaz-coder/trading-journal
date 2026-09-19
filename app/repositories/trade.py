@@ -1,6 +1,6 @@
 from uuid import UUID
 from typing import Sequence
-from sqlalchemy import select, func, case
+from sqlalchemy import select, func, case, RowMapping
 from sqlalchemy.orm import selectinload
 from datetime import datetime, timezone
 
@@ -23,7 +23,7 @@ class TradeRepo(BaseRepo[Trade]):
 
         return result.scalars().all()
 
-    async def get_for_month(self, year: int, month: int, user_id: UUID) -> Sequence[Trade]:
+    async def get_for_month(self, year: int, month: int, system_id: UUID, user_id: UUID) -> Sequence[Trade]:
         start = datetime(year, month, 1, tzinfo=timezone.utc)
 
         if month == 12:
@@ -35,6 +35,7 @@ class TradeRepo(BaseRepo[Trade]):
             select(Trade)
             .where(
                 Trade.user_id == user_id,
+                Trade.trading_system_id == system_id,
                 Trade.created_at >= start,
                 Trade.created_at < end
             )
@@ -56,12 +57,22 @@ class TradeRepo(BaseRepo[Trade]):
 
         return result.scalar_one_or_none()
 
-    async def get_by_symbol(self, symbol: str, user_id: UUID) -> Sequence[Trade]:
-        query = select(Trade).where(
-            Trade.symbol == symbol,
-            Trade.user_id == user_id
-        )
+    async def get_grouped_by_symbol(self, system_id: UUID, user_id: UUID) -> Sequence[RowMapping]:
+        query = select(
+            Trade.symbol,
+            func.sum(Trade.realized_pnl).label("total_profit"),
+            func.sum(Trade.result_r).label("r_result"),
+            func.avg(Trade.entry_price).label("average_price"),
+            func.sum(case(
+                (Trade.direction == TradeDirection.BULLISH, Trade.quantity),
+                (Trade.direction == TradeDirection.BEARISH, -Trade.quantity),
+                else_=0,)
+            ).label("net_quantity"),
+        ).where(
+            Trade.trading_system_id == system_id,
+            Trade.user_id == user_id,
+        ).group_by(Trade.symbol)
 
         result = await self.session.execute(query)
 
-        return result.scalars().all()
+        return result.mappings().all()

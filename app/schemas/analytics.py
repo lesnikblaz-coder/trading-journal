@@ -1,4 +1,5 @@
 from pydantic import BaseModel, ConfigDict, Field
+from decimal import Decimal
 
 
 class AnalyticsOverviewResponse(BaseModel):
@@ -17,3 +18,10 @@ class AnalyticsOverviewResponse(BaseModel):
 class PerformanceRequest(BaseModel):
     year: int = Field(default=2026, ge=1800)
     month: int = Field(ge=1, le=12)
+
+class OverviewBySymbolResponse(BaseModel):
+    symbol: str
+    total_profit:  Decimal | None = None
+    r_result: Decimal | None = None
+    average_price: Decimal | None = None
+    net_quantity: int | None = None
