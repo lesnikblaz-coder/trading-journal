@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from decimal import Decimal
 from uuid import UUID
 from datetime import datetime, date
@@ -12,18 +12,36 @@ class TradeCreateRequest(BaseModel):
     entry_price: Decimal = Field(gt=0)
     exit_price: Decimal | None = Field(default=None, gt=0)
     stop_loss_price: Decimal = Field(ge=0)
-    quantity: int = Field(gt=0)
+    #quantity: int = Field(gt=0)                                 # will now change to automatic calculation
     dollar_risk: Decimal = Field(gt=0)
     percent_risk: Decimal = Field(gt=0, le=100)
     opened_at: date | None = None
     closed_at: date | None = None
-    status: enums.TradeStatus
+    #status: enums.TradeStatus                                   # will now change to automatic calculation
     notes: str | None = None
 
     @field_validator("symbol")
     @classmethod
     def uppercase_symbol_name(cls, s: str) -> str:
         return s.upper().strip()
+
+    @field_validator("opened_at", "closed_at")
+    @classmethod
+    def validate_dates(cls, value: date | None) -> date | None:
+        if value is not None and value > date.today():
+            raise ValueError("Date cannot be in the future.")
+        return value
+
+    @model_validator(mode="after")
+    def validate_dates_v2(self):
+        if self.opened_at is None and self.closed_at is not None:
+            raise ValueError("Non-opened trade cannot be closed.")
+
+        if self.opened_at is not None and self.closed_at is not None:
+            if self.opened_at > self.closed_at:
+                raise ValueError("A trade cannot be closed BEFORE it has been opened.")
+
+        return self
 
 class TradeResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
