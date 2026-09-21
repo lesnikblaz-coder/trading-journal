@@ -43,7 +43,7 @@ class TradeService:
             user_id=user_id,
             trading_system_id=system_id,
             status=status,
-            quantity=quantity
+            quantity=round(quantity, 2),
             **request.model_dump(exclude_none=True),
             **calculated_data
         )

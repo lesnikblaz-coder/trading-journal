@@ -71,7 +71,7 @@ class TradeUpdateRequest(BaseModel):
     entry_price: Decimal | None = Field(default=None, gt=0)
     exit_price: Decimal | None = Field(default=None, gt=0)
     stop_loss_price: Decimal | None = Field(default=None, ge=0)
-    quantity: int | None = None
+    quantity: Decimal | None = None
     dollar_risk: Decimal | None = None
     percent_risk: Decimal | None = None
     opened_at: date | None = None
