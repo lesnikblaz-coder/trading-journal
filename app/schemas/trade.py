@@ -12,12 +12,10 @@ class TradeCreateRequest(BaseModel):
     entry_price: Decimal = Field(gt=0)
     exit_price: Decimal | None = Field(default=None, gt=0)
     stop_loss_price: Decimal = Field(ge=0)
-    #quantity: int = Field(gt=0)                                 # will now change to automatic calculation
     dollar_risk: Decimal = Field(gt=0)
     percent_risk: Decimal = Field(gt=0, le=100)
     opened_at: date | None = None
     closed_at: date | None = None
-    #status: enums.TradeStatus                                   # will now change to automatic calculation
     notes: str | None = None
 
     @field_validator("symbol")

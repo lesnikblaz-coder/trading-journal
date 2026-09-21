@@ -6,7 +6,7 @@ from app.repositories.trading_system import TradingSystemRepo
 from app.schemas import trade as sc
 from app.exceptions.custom import InvalidTradingSystemError, InvalidTradeDataValuesError, EntityNotFoundError
 from app.database.models.trade import Trade
-from app.enums import TradeDirection
+from app.enums import TradeDirection, TradeStatus
 from app.services.trade_calculations import TradeCalculations
 
 
@@ -30,13 +30,20 @@ class TradeService:
             raise InvalidTradeDataValuesError()
 
         calculated_data = {}
+        status = TradeStatus.ACTIVE
+        quantity = self._calculate_quantity(request)
+
 
         if request.exit_price is not None:
             calculated_data = self._calculate_trade_results(request)
+            status = TradeStatus.CLOSED
+
 
         trade = Trade(
             user_id=user_id,
             trading_system_id=system_id,
+            status=status,
+            quantity=quantity
             **request.model_dump(exclude_none=True),
             **calculated_data
         )
@@ -81,3 +88,7 @@ class TradeService:
             "realized_pnl_percent": trade_calc.calculate_pnl_percent(),
             "result_r": trade_calc.calculate_r_multiple()
         }
+
+    @staticmethod
+    def _calculate_quantity(data: sc.TradeCreateRequest) -> Decimal:
+        return data.dollar_risk / abs(data.entry_price - data.stop_loss_price)
