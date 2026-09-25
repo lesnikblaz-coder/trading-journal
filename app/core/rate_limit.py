@@ -13,7 +13,7 @@ class RateLimiters:
     ai: RateLimiter
 
 async def user_identifier(request: Request) -> str:
-    return f"user:{request.app.state.user_id}"
+    return f"user:{request.state.user.id}"
 
 
 async def _create_rate_limiter(
