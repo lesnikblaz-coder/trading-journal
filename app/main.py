@@ -1,10 +1,11 @@
 from google import genai
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-
+from redis.asyncio import Redis
 
 from app.exceptions.handler import register_exception_handlers
 from app.core.config import settings
+from app.core.rate_limit import create_rate_limiters
 
 # routers
 from app.routers.auth import router as auth_router
@@ -16,20 +17,39 @@ from app.routers.ai import router as ai_router
 
 @asynccontextmanager
 async def lifespan(lifespan_app: FastAPI):
+    # -------------------------
+    # Gemini
+    # -------------------------
 
     gemini = genai.Client(
         api_key=settings.GEMINI_API_KEY
     )
 
+    # -------------------------
+    # Redis
+    # -------------------------
+
+    redis = Redis.from_url(
+        url=settings.REDIS_URL,
+        decode_responses=True
+    )
+
+    await redis.ping()
+
+    rate_limiters = await create_rate_limiters(redis)
+
     lifespan_app.state.gemini = gemini.aio
+    lifespan_app.state.redis = redis
+    lifespan_app.state.rate_limiters = rate_limiters
 
-    yield
-
-    await gemini.aio.aclose()
+    try:
+        yield
+    finally:
+        await gemini.aio.aclose()
+        await redis.aclose()
 
 
 app = FastAPI(lifespan=lifespan)
-
 
 register_exception_handlers(app)
 
