@@ -159,3 +159,7 @@ async def _rate_limit_ai(request: Request, response: Response) -> None:
     rate_limiter = request.app.state.rate_limiters.ai
 
     await rate_limiter(request, response)
+
+LoginRateLimitDep = Depends(_rate_limit_login)
+AuthenticatedRateLimitDep = Depends(_rate_limit_authenticated)
+AiRateLimitDep = Depends(_rate_limit_ai)
