@@ -5,7 +5,11 @@ from app.schemas import ai as sc
 from app import dependencies as dep
 
 
-router = APIRouter()
+router = APIRouter(
+    dependencies=[
+        dep.AiRateLimitDep
+    ]
+)
 
 
 @router.post("/trades/{trade_id}/ai-review", response_model=sc.AITradeReviewResponse)

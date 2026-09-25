@@ -7,7 +7,11 @@ from app.exceptions.custom import InvalidTokenError
 from app.core.config import settings
 
 
-router = APIRouter()
+router = APIRouter(
+    dependencies=[
+        dep.LoginRateLimitDep
+    ]
+)
 
 
 REFRESH_COOKIE_NAME = "refresh_cookie"

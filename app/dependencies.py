@@ -1,4 +1,4 @@
-from fastapi import Depends, Request
+from fastapi import Depends, Request, Response
 from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -23,7 +23,9 @@ from app.ai.tools.analytics import AnalyticsTools
 from app.core.security import oauth2_scheme
 
 
-# ---------- SESSION ----------
+# ====================
+# SESSION
+# ====================
 async def _get_session():
     async with AsyncSessionLocal() as session:
         async with session.begin():
@@ -32,15 +34,18 @@ async def _get_session():
 SessionDep = Annotated[AsyncSession, Depends(_get_session)]
 
 
-
-# ---------- USER ----------
+# ====================
+# USER
+# ====================
 async def _get_user_repo(session: SessionDep) -> UserRepo:
     return UserRepo(session)
 
 UserRepoDep = Annotated[UserRepo, Depends(_get_user_repo)]
 
 
-# ---------- AUTH ----------
+# ====================
+# AUTH
+# ====================
 TokenDep = Annotated[str, Depends(oauth2_scheme)]
 
 async def _get_refresh_token_repo(session: SessionDep) -> RefreshTokenRepo:
@@ -55,14 +60,18 @@ async def _get_auth_service(repo: UserRepoDep, refresh_repo: RefreshTokenRepoDep
 AuthServiceDep = Annotated[AuthService, Depends(_get_auth_service)]
 
 
-async def _get_current_user(token: TokenDep, auth_service: AuthServiceDep) -> User | None:
-    return await auth_service.decode_user(token)
+async def _get_current_user(request: Request, token: TokenDep, auth_service: AuthServiceDep) -> User:
+    user = await auth_service.decode_user(token)
+    request.state.user = user
+    return user
 
 
 CurrentUserDep = Annotated[User, Depends(_get_current_user)]
 
 
-# ---------- TRADING SYSTEM ----------
+# ====================
+# TRADING SYSTEM
+# ====================
 async def _get_trading_system_repo(session: SessionDep) -> TradingSystemRepo:
     return TradingSystemRepo(session)
 
@@ -74,7 +83,9 @@ async def _get_trading_system_service(repo: TradingSystemRepoDep) -> TradingSyst
 TradingSystemServiceDep = Annotated[TradingSystemService, Depends(_get_trading_system_service)]
 
 
-# ---------- TRADE ----------
+# ====================
+# TRADE
+# ====================
 async def _get_trade_repo(session: SessionDep) -> TradeRepo:
     return TradeRepo(session)
 
@@ -90,14 +101,19 @@ async def _get_trade_service(t_repo: TradeRepoDep, t_s_repo: TradingSystemRepoDe
 TradeServiceDep = Annotated[TradeService, Depends(_get_trade_service)]
 
 
-# ---------- ANALYTICS ----------
+# ====================
+# ANALYTICS
+# ====================
 async def _get_analytics_service(trade_repo: TradeRepoDep) -> AnalyticsService:
     return AnalyticsService(trade_repo)
 
 AnalyticsServiceDep = Annotated[AnalyticsService, Depends(_get_analytics_service)]
 
 
-# ---------- AI CLIENT ----------
+# ====================
+# AI CLIENT
+# ====================
+
 async def _get_gemini_client(request: Request, analytics_tools: AnalyticsToolsDep, trading_system_repo: TradingSystemRepoDep) -> GeminiClient:
     return GeminiClient(
         client=request.app.state.gemini,
@@ -108,7 +124,9 @@ async def _get_gemini_client(request: Request, analytics_tools: AnalyticsToolsDe
 GeminiClientDep = Annotated[GeminiClient, Depends(_get_gemini_client)]
 
 
-# ---------- AI ----------
+# ====================
+# AI
+# ====================
 async def _get_analytics_tools(analytics_service: AnalyticsServiceDep) -> AnalyticsTools:
     return AnalyticsTools(analytics_service=analytics_service)
 
@@ -122,3 +140,26 @@ async def _get_trade_review_service(client: GeminiClientDep, trade_repo: TradeRe
     )
 
 TradeReviewServiceDep = Annotated[TradeReviewService, Depends(_get_trade_review_service)]
+
+
+# ====================
+# RATE LIMITING
+# ====================
+async def _rate_limit_login(request: Request, response: Response) -> None:
+    rate_limiter = request.app.state.rate_limiters.login
+
+    await rate_limiter(request, response)
+
+async def _rate_limit_authenticated(request: Request, response: Response) -> None:
+    rate_limiter = request.app.state.rate_limiters.authenticated
+
+    await rate_limiter(request, response)
+
+async def _rate_limit_ai(request: Request, response: Response) -> None:
+    rate_limiter = request.app.state.rate_limiters.ai
+
+    await rate_limiter(request, response)
+
+LoginRateLimitDep = Depends(_rate_limit_login)
+AuthenticatedRateLimitDep = Depends(_rate_limit_authenticated)
+AiRateLimitDep = Depends(_rate_limit_ai)

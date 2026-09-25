@@ -5,7 +5,11 @@ from app import dependencies as dep
 from app.schemas import analytics as sc
 
 
-router = APIRouter()
+router = APIRouter(
+    dependencies=[
+        dep.AuthenticatedRateLimitDep
+    ]
+)
 
 
 @router.get("/analytics/{system_id}/overview", response_model=sc.AnalyticsOverviewResponse)

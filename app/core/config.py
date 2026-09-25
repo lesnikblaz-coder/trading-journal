@@ -34,6 +34,10 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
 
 
+    # REDIS
+    REDIS_URL: str
+
+
     @property
     def async_database_url(self) -> str:
         return (

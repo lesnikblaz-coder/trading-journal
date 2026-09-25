@@ -6,7 +6,11 @@ from app.schemas import trading_system as sc
 from app.database.models.trading_system import TradingSystem
 
 
-router = APIRouter()
+router = APIRouter(
+    dependencies=[
+            dep.AuthenticatedRateLimitDep
+        ]
+)
 
 
 @router.post("/trading-systems", response_model=sc.TradingSystemResponse)

@@ -71,7 +71,7 @@ class AuthService:
 
         return await self._issue_tokens(user)
 
-    async def decode_user(self, token: str) -> User | None:
+    async def decode_user(self, token: str) -> User:
         user_id = decode_access_token(token)
         user = await self.repo.get_by_id(user_id)
 
@@ -101,7 +101,7 @@ class AuthService:
         if not user:
             raise UserNotFoundError()
 
-        self.refresh_repo.revoke(stored_token)
+        await self.refresh_repo.revoke(stored_token)
 
         new_refresh_token, new_stored = await self._issue_refresh(user)
 
@@ -123,4 +123,4 @@ class AuthService:
         if stored_token.revoked_at is not None:
             return
 
-        self.refresh_repo.revoke(stored_token)
+        await self.refresh_repo.revoke(stored_token)

@@ -6,7 +6,11 @@ from app.schemas import trade as sc
 from app.database.models.trade import Trade
 
 
-router = APIRouter()
+router = APIRouter(
+    dependencies=[
+            dep.AuthenticatedRateLimitDep
+        ]
+)
 
 @router.post("/trading-systems/{system_id}/trades", response_model=sc.TradeResponse)
 async def add_trade(system_id: UUID, request: sc.TradeCreateRequest, service: dep.TradeServiceDep, user: dep.CurrentUserDep) -> Trade:
