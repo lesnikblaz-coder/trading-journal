@@ -7,7 +7,7 @@ from app.ai.clients.ai_client import AIClient
 from app.core.config import settings
 from app.ai.tools.system_instructions import TRADE_REVIEW_INSTRUCTIONS
 from app.ai.prompts.trade_review import build_trade_review_prompt
-from app.exceptions.custom import EntityNotFoundError
+from app.exceptions.custom import EntityNotFoundError, AIInteractionLimitError
 from app.schemas import ai as sc
 from app.ai.tools.system_instructions import TRADING_ANALYST_INSTRUCTIONS
 from app.ai.tools.tools import TOOLS
@@ -57,7 +57,7 @@ class GeminiClient(AIClient):
             tools=TOOLS
         )
 
-        while True:
+        for _ in range(settings.MAX_AI_TOOL_ITERATIONS):
 
             function_calls = [
                 step
@@ -115,3 +115,5 @@ class GeminiClient(AIClient):
                 previous_interaction_id=interaction.id,
                 input=function_results
             )
+
+        raise AIInteractionLimitError()
