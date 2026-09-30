@@ -150,12 +150,12 @@ async def _rate_limit_login(request: Request, response: Response) -> None:
 
     await rate_limiter(request, response)
 
-async def _rate_limit_authenticated(request: Request, response: Response) -> None:
+async def _rate_limit_authenticated(request: Request, response: Response, _: CurrentUserDep) -> None:
     rate_limiter = request.app.state.rate_limiters.authenticated
 
     await rate_limiter(request, response)
 
-async def _rate_limit_ai(request: Request, response: Response) -> None:
+async def _rate_limit_ai(request: Request, response: Response, _: CurrentUserDep) -> None:
     rate_limiter = request.app.state.rate_limiters.ai
 
     await rate_limiter(request, response)

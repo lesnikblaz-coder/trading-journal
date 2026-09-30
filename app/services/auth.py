@@ -10,6 +10,7 @@ from app.database.models.user import User
 from app.database.models.refresh_token import RefreshToken
 from app.core.security import decode_access_token
 from app.exceptions.custom import UserNotFoundError
+from app.core.logging_config import logger
 
 
 class AuthService:
@@ -52,6 +53,7 @@ class AuthService:
 
     async def register(self, email: str, pw: str) -> TokenPair:
         if await self.repo.get_by_email(email):
+            logger.warning("Registration attempted with existing email=%s", email)
             raise DuplicateEmailError()
 
         user = User(
@@ -61,21 +63,33 @@ class AuthService:
 
         user = await self.repo.create(user)
 
+        logger.info("User registered | user_id=%s", str(user.id))
+
         return await self._issue_tokens(user)
 
     async def login(self, email: str, pw: str) -> TokenPair:
         user = await self.repo.get_by_email(email)
 
         if not user or not security.verify_pw(pw, user.hashed_pw):
+            logger.warning("Invalid login attempt | email=%s", email)
             raise InvalidCredentialsError()
+
+        logger.info(
+            "User logged in | user_id=%s", str(user.id))
 
         return await self._issue_tokens(user)
 
     async def decode_user(self, token: str) -> User:
-        user_id = decode_access_token(token)
+        try:
+            user_id = decode_access_token(token)
+        except InvalidTokenError:
+            logger.warning("Invalid access token")
+            raise
+
         user = await self.repo.get_by_id(user_id)
 
         if not user:
+            logger.error("Access token references missing user | user_id=%s", str(user_id))
             raise UserNotFoundError()
 
         return user
@@ -86,6 +100,7 @@ class AuthService:
         stored_token = await self.refresh_repo.get_by_hash(token_hash)
 
         if not stored_token:
+            logger.warning("Refresh token not found")
             raise InvalidTokenError()
 
         now = datetime.now(timezone.utc)
@@ -93,12 +108,15 @@ class AuthService:
         if (
                 stored_token.expires_at <= now
                 or
-                stored_token.revoked_at is not None):
+                stored_token.revoked_at is not None
+        ):
+            logger.warning("Invalid refresh token used | user_id=%s", str(stored_token.user_id))
             raise InvalidTokenError()
 
         user = await self.repo.get_by_id(stored_token.user_id)
 
         if not user:
+            logger.error("Refresh token references missing user | user_id%s", str(stored_token.user_id))
             raise UserNotFoundError()
 
         await self.refresh_repo.revoke(stored_token)
@@ -106,6 +124,8 @@ class AuthService:
         new_refresh_token, new_stored = await self._issue_refresh(user)
 
         stored_token.replaced_by_id = new_stored.id
+
+        logger.info("Refresh token rotated | user_id=%s", str(user.id))
 
         return TokenPair(
             access_token=security.create_access_token(user.id),
@@ -124,3 +144,5 @@ class AuthService:
             return
 
         await self.refresh_repo.revoke(stored_token)
+
+        logger.info("User logged out | user_id=%s", str(stored_token.user_id))

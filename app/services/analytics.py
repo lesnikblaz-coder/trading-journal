@@ -4,6 +4,7 @@ from app.repositories.trade import TradeRepo
 from app.schemas import analytics as sc
 from app.services.overview_calculations import OverviewCalculations
 from app.database.models.trade import Trade
+from app.core.logging_config import logger
 
 
 class AnalyticsService:
@@ -36,14 +37,37 @@ class AnalyticsService:
     async def overview_by_system_id(self, trading_system_id: UUID, user_id: UUID) -> sc.AnalyticsOverviewResponse:
         trades = list(await self.repo.get_all_for_system(trading_system_id, user_id))
 
+        logger.info(
+            "Analytics overview generated | user_id=%s | system_id=%s | trades=%s",
+            str(user_id),
+            str(trading_system_id),
+            len(trades),
+        )
+
         return await self._overview_base(trades)
 
     async def overview_monthly_performance(self, year: int, month: int, system_id: UUID, user_id: UUID) -> sc.AnalyticsOverviewResponse:
         trades = list(await self.repo.get_for_month(year, month, system_id, user_id))
 
+        logger.info(
+            "Monthly analytics generated | user_id=%s | system_id=%s | year=%s | month=%s | trades=%s",
+            str(user_id),
+            str(system_id),
+            year,
+            month,
+            len(trades),
+        )
+
         return await self._overview_base(trades)
 
     async def overview_by_symbol(self, system_id: UUID, user_id: UUID) -> list[sc.OverviewBySymbolResponse]:
         rows = list(await self.repo.get_grouped_by_symbol(system_id, user_id))
+
+        logger.info(
+            "Symbol analytics generated | user_id=%s | system_id=%s | symbols=%s",
+            str(user_id),
+            str(system_id),
+            len(rows),
+        )
 
         return [sc.OverviewBySymbolResponse.model_validate(row) for row in rows]

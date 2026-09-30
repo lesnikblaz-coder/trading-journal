@@ -5,6 +5,7 @@ from app import dependencies as dep
 from app.schemas import auth as auth_sc
 from app.exceptions.custom import InvalidTokenError
 from app.core.config import settings
+from app.core.logging_config import logger
 
 
 router = APIRouter(
@@ -68,7 +69,14 @@ async def refresh(
         response: Response,
         refresh_token: str | None = Cookie(default=None, alias=REFRESH_COOKIE_NAME)
 ) -> auth_sc.AccessTokenResponse:
-    if refresh_token is None:
+    logger.debug(
+        "Refresh endpoint received cookie | has_refresh_token=%s | has_value=%s | token_length=%s",
+        refresh_token is not None,
+        bool(refresh_token),
+        len(refresh_token) if refresh_token else 0,
+    )
+
+    if not refresh_token:
         raise InvalidTokenError()
 
     tokens = await service.refresh(refresh_token)
