@@ -1,3 +1,4 @@
+import pytest
 from uuid import uuid4
 from decimal import Decimal
 
@@ -92,3 +93,17 @@ async def test_breakeven_trade_r_multiple():
     result = calculations.calculate_r_multiple()
 
     assert result == Decimal("0")
+
+async def test_trade_without_exit_has_no_r_multiple():
+    trade = Trade(
+        entry_price=Decimal("100"),
+        stop_loss_price=Decimal("95"),
+        status=enums.TradeStatus.ACTIVE,
+        direction=enums.TradeDirection.BULLISH,
+        **_reusable_data
+    )
+
+    calculations = TradeCalculations(trade=trade)
+
+    with pytest.raises(TypeError):
+        calculations.calculate_r_multiple()
