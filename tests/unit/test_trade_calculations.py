@@ -76,3 +76,19 @@ async def test_bearish_losing_trade_r_multiple():
     result = calculations.calculate_r_multiple()
 
     assert result == Decimal("-1")
+
+async def test_breakeven_trade_r_multiple():
+    trade = Trade(
+        entry_price=Decimal("100"),
+        stop_loss_price=Decimal("95"),
+        exit_price=Decimal("100"),
+        status=enums.TradeStatus.CLOSED,
+        direction=enums.TradeDirection.BULLISH,
+        **_reusable_data
+    )
+
+    calculations = TradeCalculations(trade=trade)
+
+    result = calculations.calculate_r_multiple()
+
+    assert result == Decimal("0")
