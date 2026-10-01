@@ -44,3 +44,35 @@ async def test_bullish_losing_trade_r_multiple():
     result = calculations.calculate_r_multiple()
 
     assert result == Decimal("-1")
+
+async def test_bearish_winning_trade_r_multiple():
+    trade = Trade(
+        entry_price=Decimal("100"),
+        stop_loss_price=Decimal("105"),
+        exit_price=Decimal("90"),
+        status=enums.TradeStatus.CLOSED,
+        direction=enums.TradeDirection.BEARISH,
+        **_reusable_data
+    )
+
+    calculations = TradeCalculations(trade=trade)
+
+    result = calculations.calculate_r_multiple()
+
+    assert result == Decimal("2")
+
+async def test_bearish_losing_trade_r_multiple():
+    trade = Trade(
+        entry_price=Decimal("100"),
+        stop_loss_price=Decimal("105"),
+        exit_price=Decimal("105"),
+        status=enums.TradeStatus.CLOSED,
+        direction=enums.TradeDirection.BEARISH,
+        **_reusable_data
+    )
+
+    calculations = TradeCalculations(trade=trade)
+
+    result = calculations.calculate_r_multiple()
+
+    assert result == Decimal("-1")
