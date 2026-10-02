@@ -37,7 +37,7 @@ class TradingSystemService:
         )
 
     async def delete_by_id(self, trading_system_id: UUID, user_id: UUID) -> None:
-        return await self.repo.delete(
+        await self.repo.delete(
             entity_id=trading_system_id,
             user_id=user_id
         )
