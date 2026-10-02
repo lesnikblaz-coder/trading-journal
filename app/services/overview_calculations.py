@@ -88,8 +88,8 @@ class OverviewCalculations:
         return float(sum(values) / len(values))
 
     @staticmethod
-    def _calculate_profit_factor(gross_profit: Decimal, gross_loss: Decimal) -> float | None:
+    def _calculate_profit_factor(gross_profit: Decimal, gross_loss: Decimal) -> float:
         if gross_loss == 0:
-            return None
+            return 0.0
 
         return float(gross_profit / gross_loss)
