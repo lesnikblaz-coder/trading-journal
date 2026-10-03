@@ -32,6 +32,10 @@ class Settings(BaseSettings):
 
 
     #
+    TEST_DB_NAME: str
+
+
+    #
     ENVIRONMENT: str = "development"
 
 
@@ -52,5 +56,13 @@ class Settings(BaseSettings):
             f"postgresql+psycopg2://{self.DB_USER}:{self.DB_PASSWORD}"
             f"@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
         )
+
+    @property
+    def test_database_url(self) -> str:
+        return (
+            f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}"
+            f"@{self.DB_HOST}:{self.DB_PORT}/{self.TEST_DB_NAME}"
+        )
+
 
 settings = Settings()

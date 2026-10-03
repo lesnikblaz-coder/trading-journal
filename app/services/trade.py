@@ -33,8 +33,8 @@ class TradeService:
         status = TradeStatus.ACTIVE
         quantity = self._calculate_quantity(request)
 
-
-        if request.exit_price is not None:
+        # exit price must not be None/0 etc. to calculate trade results
+        if request.exit_price:
             calculated_data = self._calculate_trade_results(request)
             status = TradeStatus.CLOSED
 
@@ -65,7 +65,10 @@ class TradeService:
 
     async def update(self, trade_id: UUID, user_id: UUID, request: sc.TradeUpdateRequest) -> Trade:
 
-        # add calculated data if exit price is not None
+        # exit price must not be None/0 etc. to calculate trade results
+        if request.exit_price:
+            calculated_data = self._calculate_trade_results(request)
+            status = TradeStatus.CLOSED
 
         return await self.trade_repo.update(
             entity_id=trade_id,
@@ -80,7 +83,7 @@ class TradeService:
         )
 
     @staticmethod
-    def _calculate_trade_results(request: sc.TradeCreateRequest) -> dict[str, Decimal]:
+    def _calculate_trade_results(request: sc.TradeCreateRequest | sc.TradeUpdateRequest) -> dict[str, Decimal]:
         trade_calc = TradeCalculations(request)
 
         return {

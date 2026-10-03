@@ -35,4 +35,4 @@ async def update_trading_system(trading_system_id: UUID, service: dep.TradingSys
 
 @router.delete("/trading-systems/{system_id}", status_code=204)
 async def delete_trading_system(trading_system_id: UUID, service: dep.TradingSystemServiceDep, user: dep.CurrentUserDep) -> None:
-    return await service.delete_by_id(trading_system_id=trading_system_id, user_id=user.id)
+    await service.delete_by_id(trading_system_id=trading_system_id, user_id=user.id)

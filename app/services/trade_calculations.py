@@ -1,12 +1,12 @@
 from decimal import Decimal
 
 from app.enums import TradeDirection
-from app.schemas.trade import TradeCreateRequest
+from app.schemas.trade import TradeCreateRequest, TradeUpdateRequest
 from app.database.models.trade import Trade
 
 
 class TradeCalculations:
-    def __init__(self, trade: Trade | TradeCreateRequest):
+    def __init__(self, trade: Trade | TradeCreateRequest | TradeUpdateRequest):
         self.trade = trade
 
     def calculate_pnl(self) -> Decimal:
@@ -23,6 +23,7 @@ class TradeCalculations:
         return (pnl / acc_size) * 100
 
     def calculate_r_multiple(self) -> Decimal:
+        # exit, entry and stop loss price are asserted to not be None before entering this function
         if self.trade.direction is TradeDirection.BULLISH:
             return (self.trade.exit_price - self.trade.entry_price) / (self.trade.entry_price - self.trade.stop_loss_price)
 

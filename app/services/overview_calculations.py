@@ -40,25 +40,26 @@ class OverviewCalculations:
         for trade in self.trades:
             trade_calc = TradeCalculations(trade)
 
-            pnl = trade_calc.calculate_pnl()
-            r_multiple = trade_calc.calculate_r_multiple()
+            if trade.exit_price:
+                pnl = trade_calc.calculate_pnl()
+                r_multiple = trade_calc.calculate_r_multiple()
 
-            if r_multiple is not None:
-                all_r_multiples.append(r_multiple)
+                if r_multiple is not None:
+                    all_r_multiples.append(r_multiple)
 
-                if pnl is not None:
-                    if pnl > 0:
-                        winners += 1
-                        winner_r_multiples.append(r_multiple)
-                        gross_profit += pnl
+                    if pnl is not None:
+                        if pnl > 0:
+                            winners += 1
+                            winner_r_multiples.append(r_multiple)
+                            gross_profit += pnl
 
-                    elif pnl < 0:
-                        losers += 1
-                        loser_r_multiples.append(r_multiple)
-                        gross_loss += abs(pnl)
+                        elif pnl < 0:
+                            losers += 1
+                            loser_r_multiples.append(r_multiple)
+                            gross_loss += abs(pnl)
 
-                    else:
-                        breakevens += 1
+                        else:
+                            breakevens += 1
 
         return OverviewCalculationsResult(
             total_trades=total_trades,
@@ -87,8 +88,8 @@ class OverviewCalculations:
         return float(sum(values) / len(values))
 
     @staticmethod
-    def _calculate_profit_factor(gross_profit: Decimal, gross_loss: Decimal) -> float | None:
+    def _calculate_profit_factor(gross_profit: Decimal, gross_loss: Decimal) -> float:
         if gross_loss == 0:
-            return None
+            return 0.0
 
         return float(gross_profit / gross_loss)
