@@ -52,7 +52,8 @@ class AIAnalysisRequest(BaseModel):
     question: str
 
 class AIAnalysisResponse(BaseModel):
-    answer: str
+    answer: str | None
+    tools_used: list
 
 
 ###

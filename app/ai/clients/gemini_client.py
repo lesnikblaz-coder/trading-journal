@@ -57,6 +57,8 @@ class GeminiClient(AIClient):
             tools=TOOLS
         )
 
+        tools_used = []
+
         for _ in range(settings.MAX_AI_TOOL_ITERATIONS):
 
             function_calls = [
@@ -65,15 +67,17 @@ class GeminiClient(AIClient):
                 if step.type == "function_call"
             ]
 
-
             if not function_calls:
                 return sc.AIAnalysisResponse(
-                    answer=interaction.output_text
+                    answer=interaction.output_text,
+                    tools_used=tools_used
                 )
 
             function_results = []
 
             for step in function_calls:
+                tools_used.append(step.name)
+
                 if step.name == "get_performance_summary":
                     result = await self.analytics_tools.get_performance_summary(
                         user_id=user_id,
