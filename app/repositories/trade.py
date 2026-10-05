@@ -43,15 +43,15 @@ class TradeRepo(BaseRepo[Trade]):
 
         return result.scalars().all()
 
-    async def get_by_id_fetch_system(self, trade_id: UUID, user_id: UUID | None = None) -> Trade | None:
+    async def get_by_id_fetch_system(self, trade_id: UUID, user_id: UUID) -> Trade | None:
         query = (
             select(Trade)
-            .where(Trade.id == trade_id)
+            .where(
+                Trade.id == trade_id,
+                Trade.user_id == user_id
+            )
             .options(selectinload(Trade.trading_system))
         )
-
-        if user_id is not None:
-            query = query.where(Trade.user_id == user_id)
 
         result = await self.session.execute(query)
 
