@@ -10,7 +10,7 @@ from app.services.trading_system import TradingSystemService
 from app.services.auth import AuthService
 from app.services.trade import TradeService
 from app.services.analytics import AnalyticsService
-from app.services.trade_review import TradeReviewService
+from app.services.ai import AIService
 
 from app.repositories.trading_system import TradingSystemRepo
 from app.repositories.user import UserRepo
@@ -114,11 +114,10 @@ AnalyticsServiceDep = Annotated[AnalyticsService, Depends(_get_analytics_service
 # AI CLIENT
 # ====================
 
-async def _get_gemini_client(request: Request, analytics_tools: AnalyticsToolsDep, trading_system_repo: TradingSystemRepoDep) -> GeminiClient:
+async def _get_gemini_client(request: Request, analytics_tools: AnalyticsToolsDep) -> GeminiClient:
     return GeminiClient(
         client=request.app.state.gemini,
-        analytics_tools=analytics_tools,
-        trading_system_repo=trading_system_repo
+        analytics_tools=analytics_tools
     )
 
 GeminiClientDep = Annotated[GeminiClient, Depends(_get_gemini_client)]
@@ -133,13 +132,14 @@ async def _get_analytics_tools(analytics_service: AnalyticsServiceDep) -> Analyt
 AnalyticsToolsDep = Annotated[AnalyticsTools, Depends(_get_analytics_tools)]
 
 
-async def _get_trade_review_service(client: GeminiClientDep, trade_repo: TradeRepoDep) -> TradeReviewService:
-    return TradeReviewService(
+async def _get_trade_review_service(client: GeminiClientDep, trade_repo: TradeRepoDep, trading_system_repo: TradingSystemRepoDep) -> AIService:
+    return AIService(
         client=client,
-        trade_repo=trade_repo
+        trade_repo=trade_repo,
+        trading_system_repo=trading_system_repo
     )
 
-TradeReviewServiceDep = Annotated[TradeReviewService, Depends(_get_trade_review_service)]
+AIServiceDep = Annotated[AIService, Depends(_get_trade_review_service)]
 
 
 # ====================

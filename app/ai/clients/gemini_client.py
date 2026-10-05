@@ -7,22 +7,21 @@ from app.ai.clients.ai_client import AIClient
 from app.core.config import settings
 from app.ai.tools.system_instructions import TRADE_REVIEW_INSTRUCTIONS
 from app.ai.prompts.trade_review import build_trade_review_prompt
-from app.exceptions.custom import EntityNotFoundError, AIInteractionLimitError
+from app.exceptions.custom import AIInteractionLimitError
 from app.schemas import ai as sc
 from app.ai.tools.system_instructions import TRADING_ANALYST_INSTRUCTIONS
 from app.ai.tools.tools import TOOLS
 from app.ai.tools.analytics import AnalyticsTools
-from app.repositories.trading_system import TradingSystemRepo
+from app.core.logging_config import logger
 
 
 class GeminiClient(AIClient):
-    def __init__(self, client: genai.client.AsyncClient, analytics_tools: AnalyticsTools, trading_system_repo: TradingSystemRepo):
+    def __init__(self, client: genai.client.AsyncClient, analytics_tools: AnalyticsTools):
         self.client = client
         self.analytics_tools = analytics_tools
-        self.trading_system_repo = trading_system_repo
 
 
-    async def generate_trade_review(self, data: sc.AITradeReviewInput) -> sc.AITradeReviewResponse:
+    async def generate_trade_review(self, data: sc.AITradeReviewInput, trade_id: UUID, user_id: UUID) -> sc.AITradeReviewResponse:
         interaction = await self.client.interactions.create(
             model=settings.GEMINI_MODEL,
 
@@ -39,17 +38,14 @@ class GeminiClient(AIClient):
             },
         )
 
+        logger.info("AI trade review generation complete")
+
         return sc.AITradeReviewResponse.model_validate_json(
             interaction.output_text
         )
 
 
     async def analyze_trading_system(self, question: str, system_id: UUID, user_id: UUID) -> sc.AIAnalysisResponse:
-        system = await self.trading_system_repo.get_by_id(system_id, user_id)
-
-        if not system:
-            raise EntityNotFoundError("Trading system not found.")
-
         interaction = await self.client.interactions.create(
             model=settings.GEMINI_MODEL,
             system_instruction=TRADING_ANALYST_INSTRUCTIONS,
@@ -58,6 +54,7 @@ class GeminiClient(AIClient):
         )
 
         tools_used = []
+        #tool_call_count = 0
 
         for _ in range(settings.MAX_AI_TOOL_ITERATIONS):
 
@@ -73,6 +70,10 @@ class GeminiClient(AIClient):
                     tools_used=tools_used
                 )
 
+            #if tool_call_count + len(function_calls) > settings.MAX_AI_TOOL_CALLS:
+                #logger. --- also  function calls = function calls + len(function_calls) after each loop
+                #raise AIInteractionLimitError()
+
             function_results = []
 
             for step in function_calls:
@@ -81,7 +82,7 @@ class GeminiClient(AIClient):
                 if step.name == "get_performance_summary":
                     result = await self.analytics_tools.get_performance_summary(
                         user_id=user_id,
-                        system_id=system.id
+                        system_id=system_id
                     )
 
                 elif step.name == "get_performance_by_month":
