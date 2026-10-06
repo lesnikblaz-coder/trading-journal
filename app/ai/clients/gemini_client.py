@@ -54,7 +54,7 @@ class GeminiClient(AIClient):
         )
 
         tools_used = []
-        #tool_call_count = 0
+        tool_call_count = 0
 
         for _ in range(settings.MAX_AI_TOOL_ITERATIONS):
 
@@ -70,9 +70,14 @@ class GeminiClient(AIClient):
                     tools_used=tools_used
                 )
 
-            #if tool_call_count + len(function_calls) > settings.MAX_AI_TOOL_CALLS:
-                #logger. --- also  function calls = function calls + len(function_calls) after each loop
-                #raise AIInteractionLimitError()
+            if tool_call_count + len(function_calls) > settings.MAX_AI_TOOL_CALLS:
+                logger.warning(
+                    "Tool call count limit reached | question=%s | system_id=%s | user_id=%s",
+                    question,
+                    system_id,
+                    user_id
+                )
+                raise AIInteractionLimitError("Maximum AI tool calls reached")
 
             function_results = []
 
@@ -80,6 +85,8 @@ class GeminiClient(AIClient):
                 tools_used.append(step.name)
 
                 if step.name == "get_performance_summary":
+                    logger.debug("Tool called: get_performance_summary")
+
                     result = await self.analytics_tools.get_performance_summary(
                         user_id=user_id,
                         system_id=system_id
@@ -88,6 +95,8 @@ class GeminiClient(AIClient):
                 elif step.name == "get_performance_by_month":
                     arguments = sc.MonthSummaryArg.model_validate(step.arguments)
 
+                    logger.debug("Tool called: get_performance_by_month | arguments=%s", arguments.model_dump())
+
                     result = await self.analytics_tools.get_performance_by_month(
                         user_id=user_id,
                         system_id=system_id,
@@ -95,12 +104,15 @@ class GeminiClient(AIClient):
                     )
 
                 elif step.name == "get_performance_by_symbol":
+                    logger.debug("Tool called: get_performance_by_symbol")
+
                     result = await self.analytics_tools.get_performance_by_symbol(
                         user_id=user_id,
                         system_id=system_id,
                     )
 
                 else:
+                    logger.warning("ValueError -> unknown function call | step.name=%s", step.name)
                     raise ValueError(f"Unknown function call: {step.name}")
 
                 function_results.append({
@@ -113,6 +125,8 @@ class GeminiClient(AIClient):
                     }]
                 })
 
+            tool_call_count += len(function_calls)
+
             interaction = await self.client.interactions.create(
                 model=settings.GEMINI_MODEL,
                 system_instruction=TRADING_ANALYST_INSTRUCTIONS,
@@ -121,4 +135,4 @@ class GeminiClient(AIClient):
                 input=function_results
             )
 
-        raise AIInteractionLimitError()
+        raise AIInteractionLimitError("Maximum AI tool iterations reached")
