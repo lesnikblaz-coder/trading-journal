@@ -4,7 +4,7 @@ import hashlib
 
 from pwdlib import PasswordHash
 from fastapi.security import OAuth2PasswordBearer
-from uuid import UUID
+from uuid import UUID, uuid4
 from datetime import datetime, timezone, timedelta
 
 from app.core.config import settings
@@ -30,7 +30,8 @@ def create_access_token(user_id: UUID) -> str:
     payload = {
         "sub": str(user_id),
         "exp": expire,
-        "type": "access"
+        "type": "access",
+        "jti": str(uuid4()) # Prevent identical JWTs when tokens are created in the same second (found during testing)
     }
 
     return jwt.encode(
