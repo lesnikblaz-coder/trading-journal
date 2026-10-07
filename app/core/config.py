@@ -30,6 +30,8 @@ class Settings(BaseSettings):
 
     # TESTING
     TEST_DB_NAME: str
+    TEST_DB_PORT: int
+    TEST_DB_HOST: str
 
     # ENVIRONMENT
     ENVIRONMENT: str = "development"
@@ -55,7 +57,7 @@ class Settings(BaseSettings):
     def test_database_url(self) -> str:
         return (
             f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}"
-            f"@{self.DB_HOST}:{self.DB_PORT}/{self.TEST_DB_NAME}"
+            f"@{self.TEST_DB_HOST}:{self.TEST_DB_PORT}/{self.TEST_DB_NAME}"
         )
 
 

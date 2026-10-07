@@ -3,6 +3,7 @@ import pytest_asyncio
 import httpx
 
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+from sqlalchemy.pool import NullPool
 from unittest.mock import AsyncMock
 
 from app import dependencies as dep
@@ -28,6 +29,7 @@ async def test_engine():
         test_database_url,
         echo=False,
         pool_pre_ping=True,
+        poolclass=NullPool
     )
 
     async with engine.begin() as connection:

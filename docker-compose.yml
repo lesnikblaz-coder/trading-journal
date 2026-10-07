@@ -28,5 +28,16 @@ services:
   redis:
     image: redis:8
 
+  tests:
+    build: .
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    depends_on:
+      - postgres
+      - redis
+    command: pytest
+
 volumes:
   postgres_data:
