@@ -1,14 +1,15 @@
 # Virtual environments
 venv/
-price_alert_system/.venv/
+trading_journal/.venv/
 
 # Python cache
 __pycache__/
 *.pyc
 
 # Environment variables
-price_alert_system/.env
+trading_journal/.env
 .env
+.env.test
 
 # Local notes
 ideas.txt
