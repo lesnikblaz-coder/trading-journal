@@ -5,7 +5,6 @@ import httpx
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.pool import NullPool
 from unittest.mock import AsyncMock
-from decimal import Decimal
 
 from app import dependencies as dep
 from app import enums
@@ -169,11 +168,11 @@ def trade_payload():
     defaults = {
         "symbol": "NVDA",
         "direction": enums.TradeDirection.BULLISH,
-        "entry_price": Decimal("100"),
+        "entry_price": "100",
         "exit_price": None,
-        "stop_loss_price": Decimal("95"),
-        "dollar_risk": Decimal("1000"),
-        "percent_risk": Decimal("1")
+        "stop_loss_price": "95",
+        "dollar_risk": "1000",
+        "percent_risk": "1"
     }
 
     def _create(**override):
