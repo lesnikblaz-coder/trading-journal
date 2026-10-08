@@ -182,7 +182,8 @@ async def test_update(
         symbol="TEST_UPDT"
     )
     _trade.symbol = "TEST_UPDT"
-    _trade_repo.update.return_value = _trade
+    _trade_repo.get_by_id.return_value = _trade
+    _trade_repo.update_fetched_trade.return_value = _trade
 
     result = await _service.update(
         trade_id=_trade.id,
@@ -192,9 +193,8 @@ async def test_update(
 
     assert result is _trade
 
-    _trade_repo.update.assert_awaited_once_with(
-        entity_id=_trade.id,
-        user_id=_user_id,
+    _trade_repo.update_fetched_trade.assert_awaited_once_with(
+        trade=_trade,
         update_data={
             "symbol": "TEST_UPDT"
         }
