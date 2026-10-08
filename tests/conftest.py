@@ -117,3 +117,15 @@ async def test_user(db_session):
     await db_session.flush()
 
     return user
+
+@pytest_asyncio.fixture
+async def test_user_b(db_session):
+    user = User(
+        email="test_b@example.com",
+        hashed_pw=get_hash("password123")
+    )
+
+    db_session.add(user)
+    await db_session.flush()
+
+    return user
