@@ -5,6 +5,7 @@ import httpx
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.pool import NullPool
 from unittest.mock import AsyncMock
+from uuid import UUID
 
 from app import dependencies as dep
 from app import enums
@@ -13,7 +14,7 @@ from app.core.config import settings
 from app.database.base import Base
 from app.ai.clients.gemini_client import GeminiClient
 from app.database.models.user import User
-from app.core.security import get_hash
+from app.core import security
 
 
 # ==========================
@@ -111,7 +112,7 @@ async def client(db_session, mock_gemini_client):
 async def test_user(db_session):
     user = User(
         email="test@example.com",
-        hashed_pw=get_hash("password123")
+        hashed_pw=security.get_hash("password123")
     )
 
     db_session.add(user)
@@ -123,7 +124,7 @@ async def test_user(db_session):
 async def test_user_b(db_session):
     user = User(
         email="test_b@example.com",
-        hashed_pw=get_hash("password123")
+        hashed_pw=security.get_hash("password123")
     )
 
     db_session.add(user)
@@ -145,3 +146,13 @@ def system_payload():
         "break_even_rules": "Move stop at 1R",
         "additional_rules": "Avoid choppy markets"
     }
+
+@pytest.fixture
+def auth_headers():
+    def _auth_headers(test_user_id):
+        token = security.create_access_token(test_user_id)
+
+        return {
+            "Authorization": f"Bearer {token}"
+        }
+    return _auth_headers

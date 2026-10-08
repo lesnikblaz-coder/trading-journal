@@ -1,24 +1,12 @@
-from uuid import UUID
-
-from app.core import security
-
-
 TSYS_URL = "/trading-systems"
-
-
-def auth_headers(user_id: UUID):
-    token = security.create_access_token(user_id)
-
-    return {
-        "Authorization": f"Bearer {token}"
-    }
 
 
 # TESTS
 async def test_create_trading_system(
         client,
         system_payload,
-        test_user
+        test_user,
+        auth_headers
 ):
     response = await client.post(
         url=TSYS_URL,
@@ -41,7 +29,8 @@ async def test_create_trading_system(
 async def test_get_trading_systems(
         client,
         system_payload,
-        test_user
+        test_user,
+        auth_headers
 ):
     post_response = await client.post(
         url=TSYS_URL,
@@ -66,7 +55,8 @@ async def test_get_trading_systems(
 async def test_get_trading_system_by_id(
         client,
         system_payload,
-        test_user
+        test_user,
+        auth_headers
 ):
     post_response = await client.post(
         url=TSYS_URL,
@@ -92,7 +82,8 @@ async def test_get_trading_system_by_id(
 async def test_update_trading_system(
         client,
         system_payload,
-        test_user
+        test_user,
+        auth_headers
 ):
     post_response = await client.post(
         url=TSYS_URL,
@@ -134,7 +125,8 @@ async def test_update_trading_system(
 async def test_delete_trading_system(
         client,
         system_payload,
-        test_user
+        test_user,
+        auth_headers
 ):
     post_response = await client.post(
         url=TSYS_URL,
@@ -170,7 +162,8 @@ async def test_cross_user_authorization(
         client,
         test_user,
         test_user_b,
-        system_payload
+        system_payload,
+        auth_headers
 ):
     user_a_headers = auth_headers(test_user.id)
     user_b_headers = auth_headers(test_user_b.id)
