@@ -6,17 +6,10 @@ async def test_create_trading_system(
         client,
         system_payload,
         test_user,
-        auth_headers
+        auth_headers,
+        trading_system
 ):
-    response = await client.post(
-        url=TSYS_URL,
-        json=system_payload,
-        headers=auth_headers(test_user.id)
-    )
-
-    assert response.status_code == 200, response.text
-
-    data = response.json()
+    data = trading_system
 
     assert data["name"] == system_payload["name"]
     assert data["description"] == system_payload["description"]
@@ -30,15 +23,10 @@ async def test_get_trading_systems(
         client,
         system_payload,
         test_user,
-        auth_headers
+        auth_headers,
+        trading_system
 ):
-    post_response = await client.post(
-        url=TSYS_URL,
-        json=system_payload,
-        headers=auth_headers(test_user.id)
-    )
-
-    assert post_response.status_code == 200
+    post_data = trading_system
 
     get_response = await client.get(
         url=TSYS_URL,
@@ -50,23 +38,16 @@ async def test_get_trading_systems(
     data = get_response.json()
 
     assert len(data) == 1
-    assert data[0]["id"] == post_response.json()["id"]
+    assert data[0]["id"] == post_data["id"]
 
 async def test_get_trading_system_by_id(
         client,
         system_payload,
         test_user,
-        auth_headers
+        auth_headers,
+        trading_system
 ):
-    post_response = await client.post(
-        url=TSYS_URL,
-        json=system_payload,
-        headers=auth_headers(test_user.id)
-    )
-
-    assert post_response.status_code == 200
-
-    post_data = post_response.json()
+    post_data = trading_system
     system_id = post_data["id"]
 
     get_response = await client.get(
@@ -83,17 +64,10 @@ async def test_update_trading_system(
         client,
         system_payload,
         test_user,
-        auth_headers
+        auth_headers,
+        trading_system
 ):
-    post_response = await client.post(
-        url=TSYS_URL,
-        json=system_payload,
-        headers=auth_headers(test_user.id)
-    )
-
-    assert post_response.status_code == 200
-
-    post_data = post_response.json()
+    post_data = trading_system
     system_id = post_data["id"]
 
     # update the name
@@ -126,17 +100,10 @@ async def test_delete_trading_system(
         client,
         system_payload,
         test_user,
-        auth_headers
+        auth_headers,
+        trading_system
 ):
-    post_response = await client.post(
-        url=TSYS_URL,
-        json=system_payload,
-        headers=auth_headers(test_user.id)
-    )
-
-    assert post_response.status_code == 200
-
-    post_data = post_response.json()
+    post_data = trading_system
     system_id = post_data["id"]
 
     delete_response = await client.delete(
@@ -163,20 +130,13 @@ async def test_cross_user_authorization(
         test_user,
         test_user_b,
         system_payload,
-        auth_headers
+        auth_headers,
+        trading_system
 ):
     user_a_headers = auth_headers(test_user.id)
     user_b_headers = auth_headers(test_user_b.id)
 
-    post_response = await client.post(
-        url=TSYS_URL,
-        json=system_payload,
-        headers=user_a_headers
-    )
-
-    assert post_response.status_code == 200
-
-    post_data = post_response.json()
+    post_data = trading_system
     system_id = post_data["id"]
 
     # User B tries retrieving User A's system
