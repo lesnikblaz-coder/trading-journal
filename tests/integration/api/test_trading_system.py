@@ -156,7 +156,7 @@ async def test_cross_user_authorization(
 
     assert patch_response.status_code == 404
 
-    # User B tries updating User A's system
+    # User B tries deleting User A's system
     delete_response = await client.delete(
         url=f"{TSYS_URL}/{system_id}",
         headers=user_b_headers
