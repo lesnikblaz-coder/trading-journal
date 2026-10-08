@@ -64,19 +64,35 @@ class TradeService:
         return trade
 
     async def update(self, trade_id: UUID, user_id: UUID, request: sc.TradeUpdateRequest) -> Trade:
-        update_data = request.model_dump(exclude_none=True)
+        trade = await self.trade_repo.get_by_id(trade_id, user_id)
 
-        # exit price must not be None to calculate trade results
-        if request.exit_price is not None:
-            calculated_data = self._calculate_trade_results(request)
+        if trade is None:
+            raise EntityNotFoundError("Trade not found.")
+
+        update_data = request.model_dump(exclude_unset=True)
+
+        if update_data.get("exit_price") is not None:
+
+            existing_data = {
+                field: getattr(trade, field)
+                for field in sc.TradeCalculationInput.model_fields
+            }
+
+            merged_data = {
+                **existing_data,
+                **update_data
+            }
+
+            calculation_input = sc.TradeCalculationInput.model_validate(merged_data)
+
+            calculated_data = self._calculate_trade_results(calculation_input)
 
             update_data.update(calculated_data)
             update_data["status"] = TradeStatus.CLOSED
 
 
-        return await self.trade_repo.update(
-            entity_id=trade_id,
-            user_id=user_id,
+        return await self.trade_repo.update_fetched_trade(
+            trade=trade,
             update_data=update_data
         )
 
@@ -87,8 +103,8 @@ class TradeService:
         )
 
     @staticmethod
-    def _calculate_trade_results(request: sc.TradeCreateRequest | sc.TradeUpdateRequest) -> dict[str, Decimal]:
-        trade_calc = TradeCalculations(request)
+    def _calculate_trade_results(trade: sc.TradeCalculationInput) -> dict[str, Decimal]:
+        trade_calc = TradeCalculations(trade)
 
         return {
             "realized_pnl": trade_calc.calculate_pnl(),

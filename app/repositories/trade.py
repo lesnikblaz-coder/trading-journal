@@ -76,3 +76,12 @@ class TradeRepo(BaseRepo[Trade]):
         result = await self.session.execute(query)
 
         return result.mappings().all()
+
+    async def update_fetched_trade(self, trade: Trade, update_data: dict) -> Trade:
+        for field, value in update_data.items():
+            setattr(trade, field, value)
+
+        await self.session.flush()
+        await self.session.refresh(trade)
+
+        return trade

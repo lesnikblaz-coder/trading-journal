@@ -1,12 +1,11 @@
 from decimal import Decimal
 
 from app.enums import TradeDirection
-from app.schemas.trade import TradeCreateRequest, TradeUpdateRequest
-from app.database.models.trade import Trade
+from app.schemas.trade import TradeCalculationInput
 
 
 class TradeCalculations:
-    def __init__(self, trade: Trade | TradeCreateRequest | TradeUpdateRequest):
+    def __init__(self, trade: TradeCalculationInput):
         self.trade = trade
 
     def calculate_pnl(self) -> Decimal:

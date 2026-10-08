@@ -85,3 +85,13 @@ class TradeUpdateRequest(BaseModel):
         if s is None:
             return None
         return s.upper().strip()
+
+class TradeCalculationInput(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    direction: enums.TradeDirection
+    entry_price: Decimal
+    stop_loss_price: Decimal
+    exit_price: Decimal
+    dollar_risk: Decimal
+    percent_risk: Decimal
