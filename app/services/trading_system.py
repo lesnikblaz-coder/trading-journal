@@ -3,6 +3,7 @@ from uuid import UUID
 from app.repositories.trading_system import TradingSystemRepo
 from app.database.models.trading_system import TradingSystem
 from app.schemas import trading_system as sc
+from app.exceptions.custom import EntityNotFoundError
 
 
 class TradingSystemService:
@@ -24,10 +25,15 @@ class TradingSystemService:
         return [sc.TradingSystemResponse.model_validate(r) for r in result]
 
     async def get_by_id(self, trading_system_id: UUID, user_id: UUID) -> TradingSystem | None:
-        return await self.repo.get_by_id(
+        trading_system = await self.repo.get_by_id(
             entity_id=trading_system_id,
             user_id=user_id
         )
+
+        if trading_system is None:
+            raise EntityNotFoundError("Trading system not found.")
+
+        return trading_system
 
     async def update(self, trading_system_id: UUID, user_id: UUID, update_data: sc.TradingSystemUpdate) -> TradingSystem:
         return await self.repo.update(
