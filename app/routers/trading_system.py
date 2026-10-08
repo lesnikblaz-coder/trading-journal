@@ -22,17 +22,17 @@ async def get_trading_systems(service: dep.TradingSystemServiceDep, user: dep.Cu
     return await service.get_by_user(user_id=user.id)
 
 @router.get("/trading-systems/{system_id}", response_model=sc.TradingSystemResponse)
-async def get_trading_system_by_uuid(trading_system_id: UUID, service: dep.TradingSystemServiceDep, user: dep.CurrentUserDep) -> TradingSystem | None:
-    return await service.get_by_id(trading_system_id=trading_system_id, user_id=user.id)
+async def get_trading_system_by_uuid(system_id: UUID, service: dep.TradingSystemServiceDep, user: dep.CurrentUserDep) -> TradingSystem | None:
+    return await service.get_by_id(trading_system_id=system_id, user_id=user.id)
 
 @router.patch("/trading-systems/{system_id}", response_model=sc.TradingSystemResponse)
-async def update_trading_system(trading_system_id: UUID, service: dep.TradingSystemServiceDep, request: sc.TradingSystemUpdate, user: dep.CurrentUserDep) -> TradingSystem:
+async def update_trading_system(system_id: UUID, service: dep.TradingSystemServiceDep, request: sc.TradingSystemUpdate, user: dep.CurrentUserDep) -> TradingSystem:
     return await service.update(
-        trading_system_id=trading_system_id,
+        trading_system_id=system_id,
         user_id=user.id,
         update_data=request
     )
 
 @router.delete("/trading-systems/{system_id}", status_code=204)
-async def delete_trading_system(trading_system_id: UUID, service: dep.TradingSystemServiceDep, user: dep.CurrentUserDep) -> None:
-    await service.delete_by_id(trading_system_id=trading_system_id, user_id=user.id)
+async def delete_trading_system(system_id: UUID, service: dep.TradingSystemServiceDep, user: dep.CurrentUserDep) -> None:
+    await service.delete_by_id(trading_system_id=system_id, user_id=user.id)
