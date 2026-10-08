@@ -1,28 +1,10 @@
-import pytest
-
 from uuid import UUID
 
-from app import enums
 from app.core import security
 
 
 TSYS_URL = "/trading-systems"
 
-
-@pytest.fixture
-def system_payload():
-    return {
-        "name": "Momentum System",
-        "description": "My momentum trading strategy",
-        "asset_class": enums.AssetClass.ALL ,
-        "timeframe": enums.TradeTimeframe.ONE_DAY,
-        "setup_requirements": "Strong momentum",
-        "entry_rules": "Enter on pullback",
-        "stop_loss_rules": "Below recent low",
-        "take_profit_rules": "Target 3R",
-        "break_even_rules": "Move stop at 1R",
-        "additional_rules": "Avoid choppy markets"
-    }
 
 def auth_headers(user_id: UUID):
     token = security.create_access_token(user_id)

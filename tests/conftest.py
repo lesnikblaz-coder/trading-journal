@@ -7,6 +7,7 @@ from sqlalchemy.pool import NullPool
 from unittest.mock import AsyncMock
 
 from app import dependencies as dep
+from app import enums
 from app.main import app
 from app.core.config import settings
 from app.database.base import Base
@@ -104,7 +105,7 @@ async def client(db_session, mock_gemini_client):
 
 
 # ==========================
-# TEST USER
+# SHARED FIXTURES
 # ==========================
 @pytest_asyncio.fixture
 async def test_user(db_session):
@@ -129,3 +130,18 @@ async def test_user_b(db_session):
     await db_session.flush()
 
     return user
+
+@pytest.fixture
+def system_payload():
+    return {
+        "name": "Momentum System",
+        "description": "My momentum trading strategy",
+        "asset_class": enums.AssetClass.ALL ,
+        "timeframe": enums.TradeTimeframe.ONE_DAY,
+        "setup_requirements": "Strong momentum",
+        "entry_rules": "Enter on pullback",
+        "stop_loss_rules": "Below recent low",
+        "take_profit_rules": "Target 3R",
+        "break_even_rules": "Move stop at 1R",
+        "additional_rules": "Avoid choppy markets"
+    }
