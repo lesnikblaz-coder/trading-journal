@@ -5,7 +5,7 @@ import httpx
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.pool import NullPool
 from unittest.mock import AsyncMock
-from uuid import UUID
+from decimal import Decimal
 
 from app import dependencies as dep
 from app import enums
@@ -146,6 +146,40 @@ def system_payload():
         "break_even_rules": "Move stop at 1R",
         "additional_rules": "Avoid choppy markets"
     }
+
+@pytest.fixture
+async def trading_system(
+        client,
+        system_payload,
+        test_user,
+        auth_headers
+):
+    response = await client.post(
+        url="/trading-systems",
+        json=system_payload,
+        headers=auth_headers(test_user.id)
+    )
+
+    assert response.status_code == 200
+
+    return response.json()
+
+@pytest.fixture
+def trade_payload():
+    defaults = {
+        "symbol": "NVDA",
+        "direction": enums.TradeDirection.BULLISH,
+        "entry_price": Decimal("100"),
+        "exit_price": None,
+        "stop_loss_price": Decimal("95"),
+        "dollar_risk": Decimal("1000"),
+        "percent_risk": Decimal("1")
+    }
+
+    def _create(**override):
+        return {**defaults, **override}
+
+    return _create
 
 @pytest.fixture
 def auth_headers():
