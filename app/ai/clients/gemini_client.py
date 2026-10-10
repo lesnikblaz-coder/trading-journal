@@ -56,7 +56,7 @@ class GeminiClient(AIClient):
         tools_used = []
         tool_call_count = 0
 
-        for _ in range(settings.MAX_AI_TOOL_ITERATIONS):
+        for iteration in range(settings.MAX_AI_TOOL_ITERATIONS + 1):
 
             function_calls = [
                 step
@@ -64,10 +64,17 @@ class GeminiClient(AIClient):
                 if step.type == "function_call"
             ]
 
+            # Gemini has finished
             if not function_calls:
                 return sc.AIAnalysisResponse(
                     answer=interaction.output_text,
                     tools_used=tools_used
+                )
+
+            # we have exhausted the allowed tool-executions rounds
+            if iteration == settings.MAX_AI_TOOL_ITERATIONS:
+                raise AIInteractionLimitError(
+                    "Maximum AI tool iterations reached."
                 )
 
             if tool_call_count + len(function_calls) > settings.MAX_AI_TOOL_CALLS:
