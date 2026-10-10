@@ -69,3 +69,5 @@ class MonthSummaryArg(AIArgumentValidations):
 
 class SymbolSummaryArg(AIArgumentValidations):
     symbol: str = Field(min_length= 1, max_length=20)
+
+class NoArgs(AIArgumentValidations): ... # forbids any argument
