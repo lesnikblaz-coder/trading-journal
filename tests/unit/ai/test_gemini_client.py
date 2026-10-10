@@ -544,3 +544,11 @@ async def test_too_many_tools_executed(
         system_id=system_id
     )
     mock_analytics_tools.get_performance_by_month.assert_not_awaited()
+
+async def test_tool_registry_matches_definitions(mock_analytics_tools):
+    from app.ai.tools.registry import create_tool_registry
+    from app.ai.tools.tools import TOOLS
+
+    registry = create_tool_registry(mock_analytics_tools)
+
+    assert set(registry) == {tool["name"] for tool in TOOLS}
