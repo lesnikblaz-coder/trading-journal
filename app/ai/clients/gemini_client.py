@@ -91,8 +91,6 @@ class GeminiClient(AIClient):
             function_results = []
 
             for step in function_calls:
-                tools_used.append(step.name)
-
                 tool = self.tool_registry.get(step.name)
 
                 if tool is None:
@@ -108,6 +106,8 @@ class GeminiClient(AIClient):
                     system_id=system_id,
                     **arguments.model_dump()
                 )
+
+                tools_used.append(step.name)
 
                 function_results.append({
                     "type": "function_result",
