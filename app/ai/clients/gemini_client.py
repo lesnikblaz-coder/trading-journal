@@ -12,6 +12,7 @@ from app.schemas import ai as sc
 from app.ai.tools.system_instructions import TRADING_ANALYST_INSTRUCTIONS
 from app.ai.tools.tools import TOOLS
 from app.ai.tools.analytics import AnalyticsTools
+from app.ai.tools.registry import create_tool_registry
 from app.core.logging_config import logger
 
 
@@ -20,8 +21,10 @@ class GeminiClient(AIClient):
         self.client = client
         self.analytics_tools = analytics_tools
 
+        self.tool_registry = create_tool_registry(analytics_tools)
 
-    async def generate_trade_review(self, data: sc.AITradeReviewInput, trade_id: UUID, user_id: UUID) -> sc.AITradeReviewResponse:
+    async def generate_trade_review(self, data: sc.AITradeReviewInput, trade_id: UUID,
+                                    user_id: UUID) -> sc.AITradeReviewResponse:
         interaction = await self.client.interactions.create(
             model=settings.GEMINI_MODEL,
 
@@ -43,7 +46,6 @@ class GeminiClient(AIClient):
         return sc.AITradeReviewResponse.model_validate_json(
             interaction.output_text
         )
-
 
     async def analyze_trading_system(self, question: str, system_id: UUID, user_id: UUID) -> sc.AIAnalysisResponse:
         interaction = await self.client.interactions.create(
@@ -91,36 +93,21 @@ class GeminiClient(AIClient):
             for step in function_calls:
                 tools_used.append(step.name)
 
-                if step.name == "get_performance_summary":
-                    logger.debug("Tool called: get_performance_summary")
+                tool = self.tool_registry.get(step.name)
 
-                    result = await self.analytics_tools.get_performance_summary(
-                        user_id=user_id,
-                        system_id=system_id
-                    )
-
-                elif step.name == "get_performance_by_month":
-                    arguments = sc.MonthSummaryArg.model_validate(step.arguments)
-
-                    logger.debug("Tool called: get_performance_by_month | arguments=%s", arguments.model_dump())
-
-                    result = await self.analytics_tools.get_performance_by_month(
-                        user_id=user_id,
-                        system_id=system_id,
-                        **arguments.model_dump()
-                    )
-
-                elif step.name == "get_performance_by_symbol":
-                    logger.debug("Tool called: get_performance_by_symbol")
-
-                    result = await self.analytics_tools.get_performance_by_symbol(
-                        user_id=user_id,
-                        system_id=system_id,
-                    )
-
-                else:
-                    logger.warning("ValueError -> unknown function call | step.name=%s", step.name)
+                if tool is None:
+                    logger.warning("Unknown function call | step.name=%s", step.name)
                     raise ValueError(f"Unknown function call: {step.name}")
+
+                handler, schema = tool
+
+                arguments = schema.model_validate(step.arguments)
+
+                result = await handler(
+                    user_id=user_id,
+                    system_id=system_id,
+                    **arguments.model_dump()
+                )
 
                 function_results.append({
                     "type": "function_result",
