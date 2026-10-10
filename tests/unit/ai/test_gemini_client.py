@@ -9,6 +9,8 @@ from google import genai
 
 from app.ai.clients.gemini_client import GeminiClient
 from app.ai.tools.analytics import AnalyticsTools
+from app.core.config import settings
+from app.exceptions.custom import AIInteractionLimitError
 
 
 @pytest.fixture
@@ -416,3 +418,129 @@ async def test_invalid_arguments(
     mock_analytics_tools.get_performance_summary.assert_not_awaited()
     mock_analytics_tools.get_performance_by_month.assert_not_awaited()
     mock_analytics_tools.get_performance_by_symbol.assert_not_awaited()
+
+async def test_final_answer_at_iteration_limit(
+        gemini_client,
+        mock_gemini_sdk,
+        mock_analytics_tools,
+        monkeypatch
+):
+    system_id, user_id = uuid4(), uuid4()
+
+    monkeypatch.setattr(
+        settings,
+        "MAX_AI_TOOL_ITERATIONS",
+        1
+    )
+
+    first_response = SimpleNamespace(
+        id="interaction-1",
+        steps=[
+            SimpleNamespace(
+                type="function_call",
+                name="get_performance_summary",
+                id="call-1",
+                arguments={}
+            )
+        ],
+        output_text=None
+    )
+
+    second_response = SimpleNamespace(
+        id="interaction-2",
+        steps=[],
+        output_text="Yes, you are currently profitable!"
+    )
+
+    mock_analytics_tools.get_performance_summary.return_value = {
+        "expectancy": 0.48,
+        "total_trades": 500
+    }
+
+    mock_gemini_sdk.interactions.create.side_effect = [
+        first_response,
+        second_response
+    ]
+
+    result = await gemini_client.analyze_trading_system(
+        question="Am I currently profitable?",
+        system_id=system_id,
+        user_id=user_id
+    )
+
+    assert mock_gemini_sdk.interactions.create.await_count == 2
+    assert result.answer == "Yes, you are currently profitable!"
+    assert result.tools_used == ["get_performance_summary"]
+
+    mock_analytics_tools.get_performance_summary.assert_awaited_once_with(
+        user_id=user_id,
+        system_id=system_id
+    )
+
+async def test_too_many_tools_executed(
+        gemini_client,
+        mock_gemini_sdk,
+        mock_analytics_tools,
+        monkeypatch
+):
+    system_id, user_id = uuid4(), uuid4()
+
+    monkeypatch.setattr(
+        settings,
+        "MAX_AI_TOOL_ITERATIONS",
+        1
+    )
+
+    first_response = SimpleNamespace(
+        id="interaction-1",
+        steps=[
+            SimpleNamespace(
+                type="function_call",
+                name="get_performance_summary",
+                id="call-1",
+                arguments={}
+            )
+        ],
+        output_text=None
+    )
+
+    second_response = SimpleNamespace(
+        id="interaction-2",
+        steps=[
+            SimpleNamespace(
+                type="function_call",
+                name="get_performance_by_month",
+                id="call-2",
+                arguments={
+                    "year": 2026,
+                    "month": 9
+                }
+            )
+        ],
+        output_text=None
+    )
+
+    mock_analytics_tools.get_performance_summary.return_value = {
+        "expectancy": 0.48,
+        "total_trades": 500
+    }
+
+    mock_gemini_sdk.interactions.create.side_effect = [
+        first_response,
+        second_response
+    ]
+
+    with pytest.raises(AIInteractionLimitError):
+        await gemini_client.analyze_trading_system(
+            question="Am I currently profitable?",
+            system_id=system_id,
+            user_id=user_id
+        )
+
+    assert mock_gemini_sdk.interactions.create.await_count == 2
+
+    mock_analytics_tools.get_performance_summary.assert_awaited_once_with(
+        user_id=user_id,
+        system_id=system_id
+    )
+    mock_analytics_tools.get_performance_by_month.assert_not_awaited()
