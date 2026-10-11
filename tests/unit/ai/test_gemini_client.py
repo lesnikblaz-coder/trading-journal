@@ -1,6 +1,5 @@
 import pytest
 import json
-import pydantic
 
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock
@@ -388,7 +387,7 @@ async def test_invalid_arguments(
 ):
     system_id, user_id = uuid4(), uuid4()
 
-    response = SimpleNamespace(
+    first_response = SimpleNamespace(
         id="interaction-1",
         steps=[
             SimpleNamespace(
@@ -404,20 +403,48 @@ async def test_invalid_arguments(
         output_text=None
     )
 
-    mock_gemini_sdk.interactions.create.return_value = response
+    second_response = SimpleNamespace(
+        id="interaction-2",
+        steps=[],
+        output_text="I couldn't retrieve the requested month.",
+    )
 
-    with pytest.raises(pydantic.ValidationError):
-        await gemini_client.analyze_trading_system(
-            question="What was my performance in September? I love bananas!",
-            system_id=system_id,
-            user_id=user_id
-        )
+    mock_gemini_sdk.interactions.create.side_effect = [
+        first_response,
+        second_response
+    ]
 
-    mock_gemini_sdk.interactions.create.assert_awaited_once()
+    result = await gemini_client.analyze_trading_system(
+        question="What was my performance in September? I love bananas!",
+        system_id=system_id,
+        user_id=user_id
+    )
+
+    assert result.answer == "I couldn't retrieve the requested month."
+    assert result.tools_used == []
+
+    assert mock_gemini_sdk.interactions.create.await_count == 2
 
     mock_analytics_tools.get_performance_summary.assert_not_awaited()
     mock_analytics_tools.get_performance_by_month.assert_not_awaited()
     mock_analytics_tools.get_performance_by_symbol.assert_not_awaited()
+
+    calls = mock_gemini_sdk.interactions.create.await_args_list
+
+    second_request = calls[1].kwargs
+
+    assert second_request["previous_interaction_id"] == "interaction-1"
+
+    tool_results = second_request["input"]
+
+    assert tool_results[0]["call_id"] == "call-123"
+    assert tool_results[0]["type"] == "function_result"
+    assert tool_results[0]["name"] == "get_performance_by_month"
+
+    error_output = json.loads(tool_results[0]["result"][0]["text"])
+
+    assert error_output["error"]["type"] == "invalid_arguments"
+    assert error_output["error"]["message"] == "The tool arguments are invalid. Check the required fields and their types."
 
 async def test_final_answer_at_iteration_limit(
         gemini_client,
