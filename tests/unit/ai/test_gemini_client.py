@@ -579,3 +579,89 @@ async def test_tool_registry_matches_definitions(mock_analytics_tools):
     registry = create_tool_registry(mock_analytics_tools)
 
     assert set(registry) == {tool["name"] for tool in TOOLS}
+
+async def test_invalid_arguments_then_successful_retry(
+        gemini_client,
+        mock_gemini_sdk,
+        mock_analytics_tools,
+):
+    system_id, user_id = uuid4(), uuid4()
+
+    first_response = SimpleNamespace(
+        id="interaction-1",
+        steps=[
+            SimpleNamespace(
+                type="function_call",
+                name="get_performance_by_month",
+                id="call-1",
+                arguments={
+                    "year": 2026,
+                    "month": 13
+                }
+            )
+        ],
+        output_text=None
+    )
+    second_response = SimpleNamespace(
+        id="interaction-2",
+        steps=[
+            SimpleNamespace(
+                type="function_call",
+                name="get_performance_by_month",
+                id="call-2",
+                arguments={
+                    "year": 2026,
+                    "month": 9
+                }
+            )
+        ],
+        output_text=None
+    )
+    third_response = SimpleNamespace(
+        id="interaction-3",
+        steps=[],
+        output_text="Your September expectancy was +0.42R."
+    )
+
+    mock_gemini_sdk.interactions.create.side_effect = [
+        first_response,
+        second_response,
+        third_response
+    ]
+
+    result = await gemini_client.analyze_trading_system(
+        question="What was my expectancy for this years September?",
+        system_id=system_id,
+        user_id=user_id
+    )
+
+    assert mock_gemini_sdk.interactions.create.await_count == 3
+
+    calls = mock_gemini_sdk.interactions.create.await_args_list
+
+    # assert the first responses result was an error - invalid_arguments
+    second_request = calls[1].kwargs
+    assert second_request["previous_interaction_id"] == "interaction-1"
+    tool_results = second_request["input"]
+    assert tool_results[0]["call_id"] == "call-1"
+    assert tool_results[0]["type"] == "function_result"
+    assert tool_results[0]["name"] == "get_performance_by_month"
+    error_output = json.loads(tool_results[0]["result"][0]["text"])
+    assert error_output["error"]["type"] == "invalid_arguments"
+
+    third_request = calls[2].kwargs
+    assert third_request["previous_interaction_id"] == "interaction-2"
+    tool_results_2 = third_request["input"]
+    assert tool_results_2[0]["call_id"] == "call-2"
+    assert tool_results_2[0]["type"] == "function_result"
+    assert tool_results_2[0]["name"] == "get_performance_by_month"
+
+    mock_analytics_tools.get_performance_by_month.assert_awaited_once_with(
+        user_id=user_id,
+        system_id=system_id,
+        year=2026,
+        month=9
+    )
+
+    assert len(result.tools_used) == 1
+    assert result.answer == "Your September expectancy was +0.42R."
