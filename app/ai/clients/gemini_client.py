@@ -99,7 +99,7 @@ class GeminiClient(AIClient):
                     raise ValueError(f"Unknown function call: {step.name}")
 
                 handler, schema = tool
-                
+
                 try:
                     arguments = schema.model_validate(step.arguments)
 
