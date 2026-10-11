@@ -2,6 +2,7 @@ import json
 
 from google import genai
 from uuid import UUID
+from pydantic import ValidationError
 
 from app.ai.clients.ai_client import AIClient
 from app.core.config import settings
@@ -98,16 +99,27 @@ class GeminiClient(AIClient):
                     raise ValueError(f"Unknown function call: {step.name}")
 
                 handler, schema = tool
+                
+                try:
+                    arguments = schema.model_validate(step.arguments)
 
-                arguments = schema.model_validate(step.arguments)
+                # catch Pydantic's ValidationError so other unexpected errors stop the interaction instead of continuing
+                except ValidationError:
+                    result = {
+                        "error": {
+                            "type": "invalid_arguments",
+                            "message": "The tool arguments are invalid. Check the required fields and their types."
+                        }
+                    }
 
-                result = await handler(
-                    user_id=user_id,
-                    system_id=system_id,
-                    **arguments.model_dump()
-                )
+                else:
+                    result = await handler(
+                        user_id=user_id,
+                        system_id=system_id,
+                        **arguments.model_dump()
+                    )
 
-                tools_used.append(step.name)
+                    tools_used.append(step.name)
 
                 function_results.append({
                     "type": "function_result",
