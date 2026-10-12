@@ -32,3 +32,16 @@ class AnalyticsTools:
         )
 
         return [result.model_dump() for result in results]
+
+    async def get_trade_history(self, *, system_id: UUID, user_id: UUID, limit: int, symbol: str | None = None) -> dict[str, list[dict[str, object]] | int]:
+        results = await self.analytics_service.get_trade_history(
+            system_id=system_id,
+            user_id=user_id,
+            limit=limit,
+            symbol=symbol
+        )
+
+        return {
+            "trades": [r.model_dump() for r in results],
+            "returned_count": len(results)
+        }

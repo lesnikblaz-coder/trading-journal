@@ -44,3 +44,29 @@ GET_PERFORMANCE_BY_SYMBOL = {
         "required": [],
     }
 }
+
+###
+
+GET_TRADE_HISTORY = {
+    "type": "function",
+    "name": "get_trade_history",
+    "description": "Returns the authenticated user's most recent trades for the trading system. Optionally filters trades by symbol. Defaults to the 20 most recent trades if no limit is specified.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "limit": {
+                "type": "integer",
+                "description": "The maximum number of trades to return. Defaults to 20 if not specified.",
+                "minimum": 1,
+                "default": 20,
+                "maximum": 50
+            },
+            "symbol": {
+                "type": ["string", "null"],
+                "description": "The symbol to filter trades by, such as AAPL or TSLA. If not specified or null, trades for all symbols are returned.",
+                "default": None
+            }
+        },
+        "required": [],
+    }
+}

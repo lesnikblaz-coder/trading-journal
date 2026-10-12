@@ -1,6 +1,8 @@
 from pydantic import BaseModel, ConfigDict, Field
 from decimal import Decimal
 
+from app.enums import TradeDirection
+
 
 class AnalyticsOverviewResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -25,3 +27,11 @@ class OverviewBySymbolResponse(BaseModel):
     r_result: Decimal | None = None
     average_price: Decimal | None = None
     net_quantity: int | None = None
+
+class TradeHistoryResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    symbol: str
+    direction: TradeDirection
+    result_r: Decimal
+    notes: str | None

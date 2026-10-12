@@ -71,3 +71,7 @@ class SymbolSummaryArg(AIArgumentValidations):
     symbol: str = Field(min_length= 1, max_length=20)
 
 class NoArgs(AIArgumentValidations): ... # forbids any argument
+
+class TradeHistoryArgs(AIArgumentValidations):
+    limit: int = Field(default=20, ge=1, le=50)
+    symbol: str | None = None

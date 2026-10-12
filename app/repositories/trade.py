@@ -85,3 +85,21 @@ class TradeRepo(BaseRepo[Trade]):
         await self.session.refresh(trade)
 
         return trade
+
+    async def get_trade_history(self, system_id: UUID, user_id: UUID, limit: int, symbol: str | None) -> Sequence[Trade]:
+        query = (
+            select(Trade)
+            .where(
+                Trade.user_id == user_id,
+                Trade.trading_system_id == system_id,
+            )
+            .order_by(Trade.created_at.desc())
+            .limit(limit)
+        )
+
+        if symbol is not None:
+            query = query.where(Trade.symbol == symbol)
+
+        result = await self.session.execute(query)
+
+        return result.scalars().all()

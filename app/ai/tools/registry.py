@@ -16,4 +16,8 @@ def create_tool_registry(analytics_tools: AnalyticsTools) -> dict:
             analytics_tools.get_performance_by_symbol,
             sc.NoArgs
         ),
+        "get_trade_history": (
+            analytics_tools.get_trade_history,
+            sc.TradeHistoryArgs
+        )
     }

@@ -71,3 +71,21 @@ class AnalyticsService:
         )
 
         return [sc.OverviewBySymbolResponse.model_validate(row) for row in rows]
+
+    async def get_trade_history(self, *, system_id: UUID, user_id: UUID, limit: int, symbol: str | None) -> list[sc.TradeHistoryResponse]:
+        trades = list(await self.repo.get_trade_history(
+            system_id=system_id,
+            user_id=user_id,
+            limit=limit,
+            symbol=symbol
+        ))
+
+        logger.info(
+            "Get trade history generated | user_id=%s | system_id=%s | limit=%s | symbol=%s",
+            str(user_id),
+            str(system_id),
+            str(limit),
+            symbol
+        )
+
+        return [sc.TradeHistoryResponse.model_validate(t) for t in trades]
