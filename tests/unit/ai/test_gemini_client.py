@@ -629,6 +629,11 @@ async def test_invalid_arguments_then_successful_retry(
         third_response
     ]
 
+    mock_analytics_tools.get_performance_by_month.return_value = {
+        "expectancy": 0.42,
+        "total_trades": 20
+    }
+
     result = await gemini_client.analyze_trading_system(
         question="What was my expectancy for this years September?",
         system_id=system_id,
@@ -663,5 +668,14 @@ async def test_invalid_arguments_then_successful_retry(
         month=9
     )
 
-    assert len(result.tools_used) == 1
+    success_output = json.loads(
+        third_request["input"][0]["result"][0]["text"]
+    )
+
+    assert success_output == {
+        "expectancy": 0.42,
+        "total_trades": 20
+    }
+
+    assert result.tools_used == ["get_performance_by_month"]
     assert result.answer == "Your September expectancy was +0.42R."
