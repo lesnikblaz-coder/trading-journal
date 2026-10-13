@@ -24,7 +24,7 @@ class Settings(BaseSettings):
 
     # AI
     GEMINI_API_KEY: str
-    GEMINI_MODEL: str = "gemini-3.1-flash-lite"
+    GEMINI_MODEL: str = "gemini-3.8-flash" # "gemini-3.1-flash-lite"
     MAX_AI_TOOL_ITERATIONS: int = 5
     MAX_AI_TOOL_CALLS: int = 10
 
